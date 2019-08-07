@@ -1,0 +1,9 @@
+{% extends 'base.html' %}
+{% block title %}R6K nodes comments record{% endblock %}
+{% block content %}
+<div class="row" style="margin-top: 55px;margin-left: 10px;">
+    {% for line in message %}
+        <h4>{{ line|linebreaksbr }}</h4>
+    {% endfor %}
+</div>
+{% endblock %}

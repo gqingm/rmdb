@@ -1,0 +1,204 @@
+{% extends 'base.html' %}
+{% load filter_tags %}
+{% block title %}R6K nodes utilization-{{ classify }}{% endblock %}
+{% block css %}
+<style>
+    th{
+        text-align: center;
+    }
+    #myBtn {
+        display: none; /* 默认隐藏 */
+        position: fixed;
+        bottom: 20px;
+        right: 30px;
+        z-index: 99;
+        border: none;
+        outline: none;
+        background-color: red; /* 设置背景颜色，你可以设置自己想要的颜色或图片 */
+        color: white; /* 文本颜色 */
+        cursor: pointer;
+        padding: 15px;
+        border-radius: 10px; /* 圆角 */
+    }
+    #myBtn:hover {
+        background-color: #555;
+    }
+</style>
+{% endblock %}
+{% block content %}
+<div class="col-md-12">
+<div id="main" class="pull-left" style="margin-left: -25px;">
+<div class="container-fluid">
+    <div class="row" style="margin-top: 55px;text-align: center">
+        <div class="col-md-12">
+            <div id="table0_wrapper" class="dataTables_wrapper form-inline dt-bootstrap no-footer">
+                <div class="row">
+                    <div class="col-md-6 tableHeader" style="text-align: center;">
+                        <span class="navbar-left" style="display: inline;">Total:{{ total }}</span>
+                        <i style="color: darkblue;font-size: 16px;">Node utilization {{ classify }}</i>
+                    </div>
+                </div>
+                <table data-name="nodes_info" class="table table-striped table-bordered table-condensed dataTable no-footer"
+                       id="table0" role="grid" aria-describedby="table0_info" style="width: 100%;">
+                    <thead>
+                    <tr role="row">
+                        <form>
+                        {% csrf_token %}
+                            <input type="text" name="s" id="startdate" style="display: none" value={{ filter_for_css.s }}>
+                            <input type="text" name="e" id="enddate" style="display: none" value="{{ filter_for_css.e }}">
+                            <th><input type="submit" style="height: 19px;text-align: center;font-size: smaller" value="filter"></th>
+                            {% if nodes.count %}
+                                {% build_filter_table filter_for_css filter_list %}
+                            {% else %}
+                                <th>
+                                    <select name="_tp" id="topo" style="width: 80px;vertical-align: middle">
+                                        <option></option>
+                                    </select>
+                                </th>
+                                <th>
+                                    <input type="text" name="_u" id="user" style="width: 55px;height: 19px;vertical-align: middle">
+                                </th>
+                                <th>
+                                    <select name="l" id="line" style="width: 47px;vertical-align: middle">
+                                        <option></option>
+                                    </select>
+                                </th>
+                                <th>
+                                    <select name="_t" id="team" style="width: 90px;vertical-align: middle">
+                                        <option></option>
+                                    </select>
+                                </th>
+                                <th>
+                                    <select name="t" id="type" style="width: 55px;vertical-align: middle">
+                                        <option></option>
+                                    </select>
+                                </th>
+                                <th>
+                                    <select name="_v" id="version" style="width: 66px;vertical-align: middle">
+                                        <option></option>
+                                    </select>
+                                </th>
+                                <th>
+                                    <select name="_loc" id="location" style="width: 80px;vertical-align: middle">
+                                        <option></option>
+                                    </select>
+                                </th>
+                                <th>
+                                    <select name="_r" id="rack" style="width: 65px;vertical-align: middle">
+                                        <option></option>
+                                    </select>
+                                </th>
+                                <th>
+                                    <select name="_st" id="status" style="width: 55px;vertical-align: middle">
+                                        <option></option>
+                                    </select>
+                                </th>
+                            {% endif %}
+                        </form>
+                        {% if date_list.0|date:"Y-m" == date_list|last|date:"Y-m" %}
+                            <th style="text-align: center" class="noSort" colspan={{ month_days }} rowspan="1"
+                                data-original-title="" title="">{{ date_list.0|date:"Y-m" }}
+                            </th>
+                        {% else %}
+                            {% for month in monthList %}
+                                <th style="text-align: center" class="noSort" colspan={{ month.2 }} rowspan="1"
+                                    data-original-title="" title="">{{ month.0 }}-{{ month.1 }}
+                                </th>
+                            {% endfor %}
+                        {% endif %}
+                        <th style="text-align: center;vertical-align: middle" class="noSort" rowspan="2" colspan="1">Avg</th>
+                    </tr>
+                    <tr>
+                        <th rowspan="1" class="sorting" colspan="1" style="width: 120px;">IP Address</th>
+                        <th rowspan="1" class="sorting" colspan="1" style="width: 80px">Topo</th>
+                        <th rowspan="1" class="sorting" colspan="1" style="width: 55px">User</th>
+                        <th rowspan="1" class="sorting" colspan="1" style="width: 41px">Line</th>
+                        <th rowspan="1" class="sorting" colspan="1" style="width: 90px">Team</th>
+                        <th rowspan="1" class="sorting" colspan="1" style="width: 55px">Type</th>
+                        <th rowspan="1" class="sorting" colspan="1" style="width: 66px">Version</th>
+                        <th rowspan="1" class="sorting" colspan="1" style="width: 80px">Location</th>
+                        <th rowspan="1" class="sorting" colspan="1" style="width: 65px">Rack</th>
+                        <th rowspan="1" class="sorting" colspan="1" style="width: 55px">Status</th>
+                        {% for date in date_list %}
+                            {% if date.weekday == 6 or date.weekday == 5 %}
+                                <th class="noSort weekend sorting_disabled" rowspan="1" colspan="1" aria-label="10"
+                                data-original-title="" title="" style="width: 9px;background-color: yellow">{{ date|date:"d" }}
+                            {% else %}
+                                <th class="noSort weekend sorting_disabled" rowspan="1" colspan="1" aria-label="10"
+                                data-original-title="" title="" style="width: 9px;">{{ date|date:"d" }}
+                            {% endif %}
+                        {% endfor %}
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for row in nodes %}
+                        <tr role="row" class="top">
+                            <td style="display: none" nid="{{ row.nid }}"></td>
+                            <td style="display:table-cell; vertical-align:middle">{{ row.ip }}</td>
+                            <td style="display:table-cell; vertical-align:middle">{{ row.topo }}</td>
+                            <td style="display:table-cell; vertical-align:middle">{{ row.node2user_set.first.uid.eid }}</td>
+                            <td style="display: none">{{ row.username }}</td>
+                            <td style="display: none">{{ row.password }}</td>
+                            <td style="display:table-cell; vertical-align:middle">{{ row.node2user_set.first.uid.get_line_display }}</td>
+                            <td style="display:table-cell; vertical-align:middle">{{ row.node2user_set.first.uid.team }}</td>
+                            <td style="display:table-cell; vertical-align:middle">{{ row.type }}</td>
+                            <td style="display:table-cell; vertical-align:middle">{{ row.backplane }}</td>
+                            <td style="display:table-cell; vertical-align:middle">{{ row.location }}</td>
+                            <td style="display:table-cell; vertical-align:middle">{{ row.rack }}</td>
+                            <td style="display:table-cell; vertical-align:middle">{{ row.get_status_display }}</td>
+                            {% for useage in row.useages %}
+                                {% if useage.1 == 0.16 %}
+                                    {% if useage.0.weekday == 6 or useage.0.weekday == 5 %}
+                                        <td class="nodata" style="display:table-cell; vertical-align:middle;background-color: yellow">0</td>
+                                    {% else %}
+                                        <td class="nodata" style="display:table-cell; vertical-align:middle">0</td>
+                                    {% endif %}
+                                {% elif useage.1 < 0.16 %}
+                                    {% if useage.0.weekday == 6 or useage.0.weekday == 5 %}
+                                        <td class="nodata" style="display:table-cell; vertical-align:middle;background-color: yellow">-</td>
+                                    {% else %}
+                                        <td class="nodata" style="display:table-cell; vertical-align:middle">-</td>
+                                    {% endif %}
+                                {% else %}
+                                    {% if useage.0.weekday == 6 or useage.0.weekday == 5 %}
+                                        <td class="nodata" style="display:table-cell; vertical-align:middle;background-color: yellow">{{ useage.1|floatformat:2 }}</td>
+                                    {% else %}
+                                        <td class="nodata" style="display:table-cell; vertical-align:middle">{{ useage.1|floatformat:2 }}</td>
+                                    {% endif %}
+                                {% endif %}
+                            {% endfor %}
+                            {% if row.useage_avg < 0.161 %}
+                                <td class="nodata">0</td>
+                            {% else %}
+                                <td class="nodata">{{ row.useage_avg|floatformat:2 }}</td>
+                            {% endif %}
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+</div>
+<div>
+    <button onclick="topFunction()" id="myBtn">Back to Top</button>
+</div>
+{% endblock %}
+{% block js %}
+    <script type="text/javascript">
+        window.onscroll = function() {scrollFunction()};
+        function scrollFunction() {
+            if (document.body.scrollTop > 20 || document.documentElement.scrollTop > 20) {
+                document.getElementById("myBtn").style.display = "block";
+            } else {
+                document.getElementById("myBtn").style.display = "none";
+            }
+        }
+        function topFunction() {
+            document.body.scrollTop = 0;
+            document.documentElement.scrollTop = 0;
+        }
+    </script>
+{% endblock %}

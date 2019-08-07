@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+{% block title %}Accout Login{% endblock %}
+{% block css %}
+    <style>
+        .error{
+            color: red;
+            font-size: smaller;
+        }
+        body{
+            height: 80%;
+        }
+    </style>
+{% endblock %}
+{% block content %}
+<div class="login" style="margin-left: 34%;width: 30%">
+    <div style="font-size: 25px; font-weight: bold;text-align: center;padding-top: 83px;">Login Accout</div>
+    <form action="/r6k/login" method="POST">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="username">accout</label><span class="error">{{ obj.errors.username.0 }}</span>
+{#            <input type="text" class="form-control" name="username" id="username" placeholder="请输入用户名">#}
+                <p>{{ obj.username }}</p>
+        </div>
+        <div style="display: none">
+            <input name="next" type="text" value="{{ next }}">
+        </div>
+        <div class="form-group">
+            <label for="password">password</label><span class="error">{{ obj.errors.password.0 }}</span>
+                <p></p>{{ obj.password }}
+        </div>
+        <div class="checkbox">
+            <label>
+                <input type="checkbox" value="1" name="rmb">Automatic login within one month
+            </label>
+            <div class="right">
+                <a href="javascript:void(0);" onclick="resetPassword()">RESET PASSWORD</a>
+            </div>
+        </div>
+        <div class="form-group">
+            <input type="submit" value="Submit">
+            <a href="/r6k/register?next={{ next }}" class="right">Register now</a>
+        </div>
+    </form>
+</div>
+{% endblock %}
+{% block js %}
+    <script type="text/javascript">
+    function resetPassword() {
+        var account=$("#id_username").val();
+        if(account==''){
+            alert('The account should not be null.');
+        }else {
+            $.ajax({
+                url:'/user-info/resetpwd',
+                type:'POST',
+                data:{'account':account},
+                success:function (arg) {
+                    if(arg.status){
+                        alert('Please check your email.');
+                    }else {
+                        alert(dict.message);
+                    }
+                }
+            });
+        }
+    }
+    </script>
+{% endblock %}

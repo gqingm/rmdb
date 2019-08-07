@@ -1,0 +1,347 @@
+{% extends 'base.html' %}
+{% load filter_tags %}
+{% block title %}Waiting to be used R6K ixias{% endblock %}
+{% block css %}
+<style>
+    th{
+        text-align: center;
+    }
+    #share-devices{
+        background-color: #3333;
+    }
+    #myBtn {
+        display: none; /* 默认隐藏 */
+        position: fixed;
+        bottom: 20px;
+        right: 30px;
+        z-index: 99;
+        border: none;
+        outline: none;
+        background-color: #006dcc; /* 设置背景颜色，你可以设置自己想要的颜色或图片 */
+        color: white; /* 文本颜色 */
+        cursor: pointer;
+        padding: 15px;
+        border-radius: 10px; /* 圆角 */
+    }
+    #myBtn:hover {
+        background-color: #555;
+    }
+</style>
+{% endblock %}
+{% block content %}
+<div class="col-md-12">
+<div id="main" class="pull-left" style="margin-left: -25px;">
+<div class="container-fluid">
+    <div class="row" style="margin-top: 55px;text-align: center">
+        <div class="col-md-12">
+            <div id="table0_wrapper" class="dataTables_wrapper form-inline dt-bootstrap no-footer">
+                <div class="row">
+                    <div class="col-md-6 tableHeader" style="text-align: center;position: fixed">
+                        <span class="navbar-left" style="display: inline;">Total:{{ total }}</span>
+                        {% if request.session.user_info %}
+                            <a id="check_cancel" class="navbar-left btn btn-default no-radius" style="height: 20px;padding: 0px 12px" onclick="selectNone();">
+                                <i class="fa fa-minus-square-o"></i>取消
+                            </a>
+                            <a id="check_reverse" class="navbar-left btn btn-default no-radius" style="height: 20px;padding: 0px 12px" onclick="selectInverse();">
+                                <i class="fa fa-check-square-o"></i>反选
+                            </a>
+                            <a id="edit_mode_target" class="navbar-left btn btn-default no-radius" style="height: 20px;padding: 0px 12px" onclick="editMode();">
+                                <i class="fa fa-pencil-square-o"></i>
+                                <span>Enter-Edit-Mode</span>
+                            </a>
+                            <a id="do_save" class="navbar-left btn btn-default no-radius" style="height: 20px;padding: 0px 12px" onclick="saveDatas();">
+                                <i class="fa fa-floppy-o"></i>Save
+                            </a>
+                            <a id="do_refresh" class="navbar-left btn btn-default no-radius" style="height: 20px;padding: 0px 12px" onclick="refresh();">
+                                <i class="fa fa-refresh"></i>Refresh
+                            </a>
+                        {% endif %}
+                        <i style="color: darkblue;font-size: 16px;">Ixia Info</i>
+                    </div>
+                </div>
+                <table data-name="ixia_info" class="table table-striped table-bordered table-condensed dataTable no-footer"
+                       id="table0" role="grid" aria-describedby="table0_info" style="table-layout:fixed;width: 2000px;margin-top: 20px">
+                    <thead>
+                    <tr role="row">
+                        <th rowspan="1" class="sorting" colspan="1" id="checkall" onclick="selectAll();" style="width: 28px">
+                            {% if request.session.user_info %}
+                                <i class="fa fa-check-square"></i>全选
+                            {% endif %}
+                        </th>
+                        <th rowspan="1" class="sorting" colspan="1" style="width: 80px">IP Address</th>
+                        <th rowspan="1" class="sorting" colspan="1" style="width: 24px">Card</th>
+                        <th rowspan="1" class="sorting" colspan="1" style="width: 115px">Card Info</th>
+                        <th rowspan="1" class="sorting" colspan="1" style="width: 39px">Port</th>
+                        <th rowspan="1" class="sorting" colspan="1" style="width: 57px">Status</th>
+                        <th rowspan="1" class="sorting" colspan="1" style="width: 55px">Switch</th>
+                        <th rowspan="1" class="sorting" colspan="1" style="width: 50px">User</th>
+                        <th rowspan="1" class="sorting" colspan="1" style="width: 150px">Purpose</th>
+                        <th rowspan="1" class="sorting" colspan="1" style="width: 150px">UsingCycle</th>
+                        <th rowspan="1" class="sorting" colspan="1" style="width: 150px">Comments</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for row in ixias %}
+                        {% if row.card.get.status == 0 %}
+                            <tr role="row" class="top">
+                        {% elif row.card.get.status == 1 %}
+                            <tr role="row" class="top" style="background-color: #7a7a7a">
+                        {% elif row.card.get.status == 2 %}
+                            <tr role="row" class="top" style="background-color: red">
+                        {% elif row.card.get.status == 3 %}
+                            <tr role="row" class="top" style="background-color: #6f42c1">
+                        {% endif %}
+                            <td style="vertical-align:middle"><input type="checkbox" value={{ row.id }}></td>
+                            <td name="ip" style="display:table-cell; vertical-align:middle;text-align: center" ipid="{{ row.card.get.ip.id }}">
+                                {{ row.card.get.ip.ip }}
+                                {{ row.card.get.ip.chassis_info|linebreaksbr }}
+                            </td>
+                            <td name="card" ip="{{ row.card.get.ip.ip }}" cardid="{{ row.card.get.id }}" style="display:table-cell; vertical-align:middle">{{ row.card.get.slot }}</td>
+                            <td name="cardstatus" status="{{ row.card.get.status }}" style="display: none">{{ row.card.get.get_status_display }}</td>
+                            <td name="cardinfo" style="display:table-cell; vertical-align:middle;text-align: center">{{ row.card.get.card_info|linebreaksbr }}</td>
+                            <td name="portnum" style="display:table-cell; vertical-align:middle">{{ row.port_num }}</td>
+                            <td name="portstatus" style="display:table-cell; vertical-align:middle">{{ row.get_status_display }}</td>
+                            <td name="switch" style="display:table-cell; vertical-align:middle">{{ row.switch }}</td>
+                            <td name="user" style="overflow:hidden;white-space:nowrap;text-overflow: ellipsis;display:table-cell; vertical-align:middle">{{ row.user }}</td>
+                            <td name="purpose" style="overflow:hidden;white-space:nowrap;text-overflow: ellipsis;vertical-align:middle" title="{{ row.purpose }}">{{ row.purpose }}</td>
+                            <td name="usecycle" style="display:table-cell; vertical-align:middle">{{ row.usecycle }}</td>
+                            <td name="comments" style="overflow:hidden;white-space:nowrap;text-overflow: ellipsis;vertical-align:middle" title="{{ row.comments }}">{{ row.comments }}</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+</div>
+<div>
+    <button onclick="topFunction()" id="myBtn">Back to Top</button>
+</div>
+{% endblock %}
+{% block js %}
+<script type="text/javascript">
+    $(document).ready(function(){
+        //合并单元格
+        var ips = {{ count.0 }}
+        var cards = {{ count.1 }}
+        var ipele=$("td[name='ip']");
+        var cardele=$("td[name='card']");
+        var cardinfo=$("td[name='cardinfo']");
+        var ip=card=1;
+        for(var t=0;t<{{ total }};t++){
+            if(ip==1){
+                ip=ips.shift();
+                ipele.eq(t).attr('rowspan',ip);
+            }else {
+                ipele.eq(t).remove();
+                ip--;
+            }
+            if(card==1){
+                card=cards.shift();
+                cardele.eq(t).attr('rowspan',card);
+                cardinfo.eq(t).attr('rowspan',card);
+            }else {
+                cardele.eq(t).remove();
+                cardinfo.eq(t).remove();
+                card--;
+            }
+        }
+    });
+    window.onscroll = function() {scrollFunction()};
+    function scrollFunction() {
+        if (document.body.scrollTop > 20 || document.documentElement.scrollTop > 20) {
+            document.getElementById("myBtn").style.display = "block";
+        } else {
+            document.getElementById("myBtn").style.display = "none";
+        }
+    }
+    function topFunction() {
+        document.body.scrollTop = 0;
+        document.documentElement.scrollTop = 0;
+    }
+    {% if request.session.user_info %}
+        function selectAll(){
+            $("[type='checkbox']").prop("checked","checked");
+            var olddata=$('#edit_mode_target').attr('class');
+            if(olddata.indexOf('btn-warning') != -1){
+                $('tbody').find('tr').each(function () {
+                    olddata=$(this).attr('class');
+                    if(olddata.indexOf('success') == -1){
+                        TrIntoEdit(this);
+                    }
+                });
+            }
+        }
+        function selectNone(){
+            var olddata=$('#edit_mode_target').attr('class');
+            if(olddata.indexOf('btn-warning') != -1){
+                $('tbody').find('tr').each(function () {
+                    TrOutEdit(this);
+                });
+            }
+            $("[type='checkbox']").prop("checked","");
+        }
+        function selectInverse(){
+            $("[type='checkbox']").each(function () {
+                $(this).prop("checked", !$(this).prop("checked"));
+            });
+            var olddata=$('#edit_mode_target').attr('class');
+            if(olddata.indexOf('btn-warning') != -1){
+                $('tbody').find('tr').each(function () {
+                    if($(this).find("[type='checkbox']").prop("checked")==true){
+                        TrIntoEdit(this);
+                    }else {
+                        TrOutEdit(this);
+                    }
+                });
+            }
+        }
+        function refresh() {
+            window.location.reload();
+        }
+        function TrIntoEdit(tr) {
+            $(tr).addClass('success');
+            $(tr).attr('edit-enable',true);
+            //替换portstatus
+            olddata=$(tr).find("td[name='portstatus']").text();
+            var sel=document.createElement('select');
+            $(sel).attr('name','portstatus').attr('original',olddata).attr('style','width:100%');
+            var opt = document.createElement('option');
+            if (olddata == 'booked') {
+                $(opt).text(olddata).attr('value',olddata).appendTo($(sel));
+                $(opt).prop('selected', true);
+            } else {
+                $(opt).text('booked').attr('value','booked').appendTo($(sel));
+            }
+            opt = document.createElement('option');
+            if (olddata == 'broken') {
+                $(opt).text(olddata).attr('value',olddata).appendTo($(sel));
+                $(opt).prop('selected', true);
+            } else {
+                $(opt).text('broken').attr('value','broken').appendTo($(sel));
+            }
+            opt = document.createElement('option');
+            if (olddata == 'release') {
+                $(opt).text(olddata).attr('value',olddata).appendTo($(sel));
+                $(opt).prop('selected', true);
+            } else {
+                $(opt).text('release').attr('value','release').appendTo($(sel));
+            }
+            $(tr).find("td[name='portstatus']").empty().append(sel);
+            //替换switch
+            olddata=$(tr).find("td[name='switch']").text();
+            if(olddata=='None'){olddata=''}
+            sel=document.createElement('input');
+            $(sel).attr('name','switch').attr('original',olddata).attr('style','width:100%;height:22px;').attr('value',olddata);
+            $(tr).find("td[name='switch']").empty().append(sel);
+            //替换user
+            olddata=$(tr).find("td[name='user']").text();
+            if(olddata=='None'){olddata=''}
+            sel=document.createElement('input');
+            $(sel).attr('name','user').attr('original',olddata).attr('style','width:100%;height:22px;').attr('value',olddata);
+            $(tr).find("td[name='user']").empty().append(sel);
+            //替换purpose
+            olddata=$(tr).find("td[name='purpose']").text();
+            if(olddata=='None'){olddata=''}
+            sel=document.createElement('input');
+            $(sel).attr('name','purpose').attr('original',olddata).attr('style','width:100%;height:22px;').attr('value',olddata);
+            $(tr).find("td[name='purpose']").empty().append(sel);
+            //替换usecycle
+            olddata=$(tr).find("td[name='usecycle']").text();
+            if(olddata=='None'){olddata=''}
+            sel=document.createElement('input');
+            $(sel).attr('name','usecycle').attr('original',olddata).attr('style','width:100%;height:22px;').attr('value',olddata);
+            $(tr).find("td[name='usecycle']").empty().append(sel);
+            //替换comments
+            olddata=$(tr).find("td[name='comments']").text();
+            if(olddata=='None'){olddata=''}
+            sel=document.createElement('input');
+            $(sel).attr('name','comments').attr('original',olddata).attr('style','width:100%;height:22px;').attr('value',olddata);
+            $(tr).find("td[name='comments']").empty().append(sel);
+        }
+        function TrOutEdit(tr) {
+            var olddata=$(tr).attr('class');
+            if(olddata.indexOf('success') != -1){
+                $(tr).removeClass('success');
+                $(tr).attr('edit-enable',false);
+                olddata=$(tr).find("select[name='portstatus']").val();
+                $(tr).find("td[name='portstatus']").empty().text(olddata);
+                olddata=$(tr).find("input[name='switch']").val();
+                $(tr).find("td[name='switch']").empty().text(olddata);
+                olddata=$(tr).find("select[name='line']").val();
+                $(tr).find("td[name='line']").empty().text(olddata);
+                olddata=$(tr).find("input[name='user']").val();
+                $(tr).find("td[name='user']").empty().text(olddata);
+                olddata=$(tr).find("input[name='purpose']").val();
+                $(tr).find("td[name='purpose']").empty().text(olddata);
+                olddata=$(tr).find("input[name='usecycle']").val();
+                $(tr).find("td[name='usecycle']").empty().text(olddata);
+                olddata=$(this).find("input[name='comments']").val();
+                $(tr).find("td[name='comments']").empty().text(olddata);
+            }
+        }
+        function editMode() {
+            var olddata=$('#edit_mode_target').attr('class');
+            if(olddata.indexOf('btn-warning') == -1){
+                $('#edit_mode_target').addClass('btn-warning').find('span').text('Quit-Edit-Mode');
+                $('tbody').find('tr').each(function () {
+                    if($(this).find("[type='checkbox']").prop("checked")==true){
+                        TrIntoEdit(this);
+                    }
+                });
+            }else {
+                $('#edit_mode_target').removeClass('btn-warning').find('span').text('Enter-Edit-Mode');
+                $('tbody').find('tr').each(function () {
+                    TrOutEdit(this);
+                });
+            }
+        }
+        function saveDatas() {
+            var olddata=$('#edit_mode_target').attr('class');
+            if(olddata.indexOf('btn-warning') != -1){
+                var postdata=[];
+                var tmp={};
+                $('tbody').find('tr[edit-enable="true"]').each(function () {
+                    tmp={'id':'','portstatus':[],'switch':[],'user':[],'purpose':[],'usecycle':[],'comments':[]};
+                    $(this).find('input,select').each(function () {
+                        var n=$(this).attr('name');
+                        if(n==undefined){n='id';}
+                        {#var v=$(this).val();#}
+                        if(n=='id'){
+                            tmp[n]=$(this).val();
+                        }else {
+                            tmp[n].push($(this).val(),$(this).attr('original'));
+                        }
+                    });
+                    postdata.push(tmp);
+                });
+                console.log(postdata);
+                postdata=JSON.stringify(postdata);
+                $.ajax({
+                    url:'/r6k/edit-ports',
+                    type:'POST',
+                    data:{'data':postdata,'csrfmiddlewaretoken':$("[name='csrfmiddlewaretoken']").val()},
+                    success:function (arg) {
+                        if(arg.status) {
+                            window.location.reload();
+                        }else {
+                            alert(arg.message);
+                        }
+                    }
+                });
+            }
+        }
+        $('input[type="checkbox"]').change(function () {
+            var tr=$(this).parent().parent();
+            var olddata=$('#edit_mode_target').attr('class');
+            if(olddata.indexOf('btn-warning') != -1 & $(this).prop("checked")==true){
+                TrIntoEdit(tr);
+            }else if(olddata.indexOf('btn-warning') != -1 & $(this).prop("checked")!=true){
+                TrOutEdit(tr);
+            }
+        });
+    {% endif %}
+    </script>
+{% endblock %}

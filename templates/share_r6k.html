@@ -1,0 +1,343 @@
+{% extends 'base.html' %}
+{% load filter_tags %}
+{% block title %}Waiting to be used R6K nodes{% endblock %}
+{% block css %}
+<style>
+    th{
+        text-align: center;
+    }
+    #share-devices{
+        background-color: #3333;
+    }
+    #myBtn {
+        display: none; /* 默认隐藏 */
+        position: fixed;
+        bottom: 20px;
+        right: 30px;
+        z-index: 99;
+        border: none;
+        outline: none;
+        background-color: #006dcc; /* 设置背景颜色，你可以设置自己想要的颜色或图片 */
+        color: white; /* 文本颜色 */
+        cursor: pointer;
+        padding: 15px;
+        border-radius: 10px; /* 圆角 */
+    }
+    #myBtn:hover {
+        background-color: #555;
+    }
+</style>
+{% endblock %}
+{% block content %}
+<div class="col-md-12">
+<div id="main" class="pull-left" style="margin-left: -25px;">
+<div class="container-fluid">
+    <div class="row" style="margin-top: 55px;text-align: center">
+        <div class="col-md-12">
+            <div id="table0_wrapper" class="dataTables_wrapper form-inline dt-bootstrap no-footer">
+                <div class="row">
+                    <div class="col-md-12 tableHeader" style="text-align: center;">
+                        <span class="navbar-left" style="display: inline;">Total:{{ total }}</span>
+                        <i style="color: darkblue;font-size: 16px;">Devices Info</i>
+                    </div>
+                </div>
+                <table data-name="nodes_info" class="table table-striped table-bordered table-condensed dataTable no-footer"
+                       id="table0" role="grid" aria-describedby="table0_info" style="width: 100%">
+                    <thead>
+                    <tr role="row">
+                        <form>
+                            {% if filter_for_css %}
+                                {% build_share_r6k filter_for_css filter_list %}
+                            {% else %}
+                            <th></th>
+                            <th>
+                                <select name="_tp" id="topo" style="width: 80px">
+                                    <option></option>
+                                    {% for topo in filter_list.topo_list %}
+                                        <option value="{{ topo.topo }}">{{ topo.topo }}</option>
+                                    {% endfor %}
+                                </select>
+                            </th>
+                            <th></th>
+                            <th></th>
+                            <th></th>
+                            <th>
+                                <select name="_ty" id="type" style="width: 55px;">
+                                    <option></option>
+                                    {% for type in filter_list.type_list %}
+                                        {% if type.type != None %}
+                                            <option value="{{ type.type }}">{{ type.type }}</option>
+                                        {% endif %}
+                                    {% endfor %}
+                                </select>
+                            </th>
+                            <th>
+                                <select name="_v" id="version" style="width: 66px;">
+                                    <option></option>
+                                    {% for version in filter_list.version_list %}
+                                        {% if version.backplane != None %}
+                                            <option value="{{ version.backplane }}">{{ version.backplane }}</option>
+                                        {% endif %}
+                                    {% endfor %}
+                                </select>
+                            </th>
+                            <th>
+                                <select name="_loc" id="location" style="width: 80px;">
+                                    <option></option>
+                                    {% for location in filter_list.location_list %}
+                                        <option value="{{ location.location }}">{{ location.location }}</option>
+                                    {% endfor %}
+                                </select>
+                            </th>
+                            <th>
+                                <select name="_r" id="rack" style="width: 65px;">
+                                    <option></option>
+                                    {% for rack in filter_list.rack_list %}
+                                        <option value="{{ rack.rack }}">{{ rack.rack }}</option>
+                                    {% endfor %}
+                                </select>
+                            </th>
+                            <th>
+                                <input type="text" name="_b" id="bams" placeholder="search for bamsid" style="width: 90px;height: 19px">
+                            </th>
+                            <th><input type="submit" style="height: 19px;text-align: center;font-size: smaller;vertical-align:middle" value="filter"></th>
+                            <th>
+                                <select name="_st" id="status" style="width: 55px;">
+                                    <option></option>
+                                    {% for status in filter_list.status_list %}
+                                        {% statusselect status.status %}
+                                    {% endfor %}
+                                </select>
+                            </th>
+                            <th>
+                                <select name="_m" id="status" style="width:40px;">
+                                    <option></option>
+                                    <option value="0">D</option>
+                                    <option value="1">C</option>
+                                </select>
+                            </th>
+                            <th>
+                                <input type="text" name="_q" placeholder="search for hardware" id="hardware" style="height: 19px;width: 340px">
+                            </th>
+                            {% endif %}
+                        </form>
+                    </tr>
+                    <tr>
+                        <th rowspan="1" class="sorting" colspan="1" style="width: 120px;">IP Address</th>
+                        <th rowspan="1" class="sorting" colspan="1" style="width: 80px">Topo</th>
+                        <th rowspan="1" class="sorting" colspan="1" style="width: 55px">User</th>
+                        <th rowspan="1" class="sorting" colspan="1" style="width: 41px">Line</th>
+                        <th rowspan="1" class="sorting" colspan="1" style="width: 90px">Team</th>
+                        <th rowspan="1" class="sorting" colspan="1" style="width: 55px">Type</th>
+                        <th rowspan="1" class="sorting" colspan="1" style="width: 66px">Version</th>
+                        <th rowspan="1" class="sorting" colspan="1" style="width: 80px">Location</th>
+                        <th rowspan="1" class="sorting" colspan="1" style="width: 65px">Rack</th>
+                        <th rowspan="1" class="sorting" colspan="1" style="width: 90px">BAMS Id</th>
+                        <th rowspan="1" class="sorting" colspan="1" style="width: 80px">SN</th>
+                        <th rowspan="1" class="sorting" colspan="1" style="width: 55px">Status</th>
+                        <th rowspan="1" class="sorting" colspan="1" style="width: 40px">Mode</th>
+                        <th rowspan="1" class="sorting" colspan="1" style="width: 387px">Hardware</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for row in nodes %}
+                        {% if row.status > 2 %}
+                            <tr role="row" class="top" style="background-color: red">
+                        {% else %}
+                            <tr role="row" class="top" style="background-color: lawngreen">
+                        {% endif %}
+                            <td style="display: none" nid="{{ row.nid }}"></td>
+                            {% if request.session.user_info.superuser %}
+                                <td style="display:table-cell; vertical-align:middle">
+                                    <a class="editBtn" onclick="editNode(this);">{{ row.ip }}</a>
+                                </td>
+                            {% else %}
+                                <td style="display:table-cell; vertical-align:middle">{{ row.ip }}</td>
+                            {% endif %}
+                            <td style="display: none" console="{{ row.console }}"></td>
+                            <td style="display:table-cell; vertical-align:middle">{{ row.topo }}</td>
+                            <td style="display:table-cell; vertical-align:middle">{{ row.node2user_set.first.uid.eid }}</td>
+                            <td style="display: none">{{ row.username }}</td>
+                            <td style="display: none">{{ row.password }}</td>
+                            <td style="display:table-cell; vertical-align:middle">{{ row.node2user_set.first.uid.get_line_display }}</td>
+                            <td style="display:table-cell; vertical-align:middle">{{ row.node2user_set.first.uid.team }}</td>
+                            <td style="display:table-cell; vertical-align:middle">{{ row.type }}</td>
+                            <td style="display:table-cell; vertical-align:middle">{{ row.backplane }}</td>
+                            <td style="display:table-cell; vertical-align:middle">{{ row.location }}</td>
+                            <td style="display:table-cell; vertical-align:middle">{{ row.rack }}</td>
+                            <td style="display:table-cell; vertical-align:middle">{{ row.bams }}</td>
+                            <td style="display:table-cell; vertical-align:middle">{{ row.sn }}</td>
+                            <td style="display:table-cell; vertical-align:middle">{{ row.get_status_display }}</td>
+                            <td style="display:table-cell; vertical-align:middle">{{ row.get_mode_display }}</td>
+                            {#如果信息中带有回车，前端展示时分行#}
+                            <td style="display:table-cell; vertical-align:middle">{{ row.hardware_info|linebreaksbr }}</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+</div>
+<div>
+    <button onclick="topFunction()" id="myBtn">Back to Top</button>
+</div>
+    <div class="modal fade" id="editNode" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span>
+                    </button>
+                    <h4 class="modal-title" id="myModalLabel">Edit Node</h4>
+                </div>
+                <div class="modal-body">
+                    <form id="fm" class="form-horizontal">
+                        {% csrf_token %}
+                        <input type="text" name="node_nid" value="" style="display: none">
+                        <div class="form-group">
+                            <label for="ip" class="col-sm-2 control-label">Node ip</label>
+                            <div class="col-sm-9">
+                                <input type="text" class="form-control test2" name="ip" value="">
+                            </div>
+                            <label for="console" class="col-sm-2 control-label">Console</label>
+                            <div class="col-sm-9">
+                                <input type="text" class="form-control test2" name="console" value="">
+                            </div>
+                            <label for="user" class="col-sm-2 control-label">User</label>
+                            <div class="col-sm-9">
+                                <input type="text" class="form-control test2" name="user" value="">
+                            </div>
+                            <label for="username" class="col-sm-2 control-label">Username</label>
+                            <div class="col-sm-9">
+                                <input type="text" class="form-control test2" name="username" value="">
+                            </div>
+                            <label for="password" class="col-sm-2 control-label">Password</label>
+                            <div class="col-sm-9">
+                                <input type="text" class="form-control test2" name="password" value="">
+                            </div>
+                            <label for="location" class="col-sm-2 control-label">Location</label>
+                            <div class="col-sm-9">
+                                <input type="text" class="form-control test2" name="location" value="">
+                            </div>
+                            <label for="rack" class="col-sm-2 control-label">Rack</label>
+                            <div class="col-sm-9">
+                                <input type="text" class="form-control test2" name="rack" value="">
+                            </div>
+                            <label for="bams" class="col-sm-2 control-label">Bams</label>
+                            <div class="col-sm-9">
+                                <input type="text" class="form-control test2" name="bams" value="" disabled="disabled">
+                            </div>
+                            <label for="topo" class="col-sm-2 control-label">TopoName</label>
+                            <div class="col-sm-9">
+                                <input type="text" class="form-control test2" name="topo" value="">
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <span id="errormsg" style="color: red"></span>
+                    <button type="button" class="btn btn-default left" data-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="SaveChange">Save</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    {#add comment#}
+    <div class="modal fade" id="addcomment" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span>
+                    </button>
+                    <h4 class="modal-title" id="myModalLabel">Add Comment</h4>
+                </div>
+                <div class="modal-body">
+                    <form id="fm" class="form-horizontal">
+                        {% csrf_token %}
+                        <input type="text" name="comment_nid" value="" style="display: none">
+                        <div class="form-group">
+                            <div class="col-sm-12">
+                                <input type="text" class="form-control" name="comment" value="">
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <span id="errormsg" style="color: red"></span>
+                    <button type="button" class="btn btn-default left" data-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="SaveComment">Save</button>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+{% block js %}
+<script type="text/javascript">
+    window.onscroll = function() {scrollFunction()};
+    function scrollFunction() {
+        if (document.body.scrollTop > 20 || document.documentElement.scrollTop > 20) {
+            document.getElementById("myBtn").style.display = "block";
+        } else {
+            document.getElementById("myBtn").style.display = "none";
+        }
+    }
+    function topFunction() {
+        document.body.scrollTop = 0;
+        document.documentElement.scrollTop = 0;
+    }
+    function editNode(ths){
+        $('#editNode').modal('show');
+        var data={'nid':'','ip':'','console':'','user':'','username':'','password':'','location':'','rack':'','topo':''};
+        data.nid=ths.parentElement.previousElementSibling.getAttribute('nid');
+        data.ip=ths.innerHTML;
+        data.console=ths.parentElement.nextElementSibling.getAttribute('console');
+        data.topo=ths.parentElement.nextElementSibling.nextElementSibling.innerHTML;
+        data.eid=ths.parentElement.nextElementSibling.nextElementSibling.nextElementSibling.innerHTML;
+        data.username=ths.parentElement.nextElementSibling.nextElementSibling.nextElementSibling.nextElementSibling.innerHTML;
+        data.password=ths.parentElement.nextElementSibling.nextElementSibling.nextElementSibling.nextElementSibling.nextElementSibling.innerHTML;
+        data.location=ths.parentElement.nextElementSibling.nextElementSibling.nextElementSibling.nextElementSibling.nextElementSibling.nextElementSibling.nextElementSibling.nextElementSibling.nextElementSibling.nextElementSibling.innerHTML;
+        data.rack=ths.parentElement.nextElementSibling.nextElementSibling.nextElementSibling.nextElementSibling.nextElementSibling.nextElementSibling.nextElementSibling.nextElementSibling.nextElementSibling.nextElementSibling.nextElementSibling.innerHTML;
+        data.bams=ths.parentElement.nextElementSibling.nextElementSibling.nextElementSibling.nextElementSibling.nextElementSibling.nextElementSibling.nextElementSibling.nextElementSibling.nextElementSibling.nextElementSibling.nextElementSibling.nextElementSibling.innerHTML;
+        {#console.log(data);#}
+        $("input[name='node_nid']").val(data.nid);
+        $("input[name='ip']").val(data.ip);
+        $("input[name='console']").val(data.console);
+        $("input[name='user']").val(data.eid);
+        $("input[name='username']").val(data.username);
+        $("input[name='password']").val(data.password);
+        $("input[name='location']").val(data.location);
+        $("input[name='rack']").val(data.rack);
+        $("input[name='topo']").val(data.topo);
+        $("input[name='bams']").val(data.bams);
+        if(data.bams.length<10){
+            $("input[name='bams']").removeAttr("disabled");
+        }
+    }
+    $('#SaveChange').click(function () {
+       var postdata={};
+        $('#editNode').find('input,select').each(function () {
+            var v=$(this).val();
+            var n=$(this).attr('name');
+            postdata[n]=v;
+        });
+        {#console.log(postdata);#}
+        $.ajax({
+            url:'/r6k/edit-node',
+            type:'POST',
+            data:postdata,
+            success:function (arg) {
+                //arg字符串
+                //JSON.parse将字符串转换成字典，相当于python中的jason.load
+                var dict=JSON.parse(arg);
+                if(dict.status){
+                    window.location.reload();
+                }else {
+                    alert(dict.message);
+                }
+            }
+        });
+    });
+    </script>
+{% endblock %}

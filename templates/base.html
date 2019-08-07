@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html style="height: 100%">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}{% endblock %}</title>
+    <link rel="shortcut icon" href="/static/images/favicon.ico"/>
+    <link rel="stylesheet" href="/static/plugins/bootstrap/css/bootstrap.css"/>
+    <link rel="stylesheet" href="/static/plugins/font-awesome/css/font-awesome.css"/>
+    <link rel="stylesheet" href="/static/css/edmure.css"/>
+    <link rel="stylesheet" href="/static/css/commons.css"/>
+    <link rel="stylesheet" href="/static/css/row-avatar.css"/>
+    {% block css %}{% endblock %}
+    <script type="text/javascript" src="/static/js/jquery-3.3.1.js"></script>
+    <script type="text/javascript" src="/static/plugins/bootstrap/js/bootstrap.js"></script>
+    <script src="/static/js/bootstrap-datepicker.js"></script>
+</head>
+<body style="height: 90%; margin: 0">
+<nav class="navbar navbar-default navbar-fixed-top">
+    <div class="grad collapsed" style="margin: 0; padding: 0; border: 0; width: 100%; height: 4px; overflow: hidden;">
+        <img style="width: 100%; height: 4000px; display: block;" src="/static/images/ich.png">
+    </div>
+    <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse"
+                    data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+                <span class="sr-only"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/r6k">
+                <img src="/static/images/ericsson.png" alt="Brand" style="display: inline;height: 22px">R6K
+            </a>
+        </div>
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+            <ul class="nav navbar-nav">
+                <li id="nodes-info"><a href="/r6k/nodes">Node info<span class="sr-only"></span></a></li>
+                <li id="ixia"><a href="/r6k/ixia">IXIA</a></li>
+                <li id="share-devices" role="presentation" class="dropdown">
+                    <a class="dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="true">
+                      Shared Devices <span class="caret"></span>
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li id="share-r6k"><a href="/share/r6k">R6K</a></li>
+                        <li id="share-ixia"><a href="/share/ixia">IXIA</a></li>
+                        <li role="separator" class="divider"></li>
+                        <li id="share-others"><a href="/share/others">Others</a></li>
+                    </ul>
+                </li>
+            </ul>
+            {% if request.session.user_info %}
+                <form class="navbar-form navbar-left" enctype="multipart/form-data" action="/upload" method="post">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <input class="form-group" type="file" id="file" name="myfile" />
+                    </div>
+                   <button type="submit" class="btn btn-default">upload</button>
+                </form>
+                <a class="btn btn-default addNode" style="margin-top: 7px"><i class="fa fa-plus-circle"></i>Add node</a>
+                {% if request.session.user_info.superuser %}
+                    <a class="btn btn-default addIxia" style="margin-top: 7px"><i class="fa fa-plus-circle"></i>Add ixia</a>
+                {% endif %}
+            {% endif %}
+            <ul class="nav navbar-nav navbar-right">
+                {% if request.session.user_info %}
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">{{ request.session.user_info.eid }}<span class="caret"></span></a>
+                        <ul class="dropdown-menu">
+                            <li><a href="/user-info">Personal Details</a></li>
+                            <li><a href="/user-info/changepwd">Change Password</a></li>
+                            <li role="separator" class="divider"></li>
+                            <li><a href="/logout">Logout</a></li>
+                        </ul>
+                    </li>
+                {% else %}
+                    <li style="text-align: left;">
+                        <a href="/r6k/register" class="dropdown-toggle">
+                            Register
+                        </a>
+                    </li>
+                    <li style="text-align: left;margin-right: 20px">
+                        <a href="/r6k/login?next={{ request.path }}" class="dropdown-toggle">
+                            Login
+                        </a>
+                    </li>
+                {% endif %}
+            </ul>
+        </div><!-- /.navbar-collapse -->
+    </div><!-- /.container-fluid -->
+    <div class="modal fade" id="addNode" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span>
+                    </button>
+                    <h4 class="modal-title" id="myModalLabel">Add Node</h4>
+                </div>
+                <div class="modal-body">
+                    <form id="fm1" class="form-horizontal">
+                        {% csrf_token %}
+                        <div class="form-group">
+                            <label for="title" class="col-sm-2 control-label">Node ip</label>
+                            <div class="col-sm-9">
+                                <input type="text" class="form-control test2" name="ip" value="">
+                            </div>
+                            <label for="title" class="col-sm-2 control-label">Console</label>
+                            <div class="col-sm-9">
+                                <input type="text" class="form-control test2" name="console" value="">
+                            </div>
+                            <label for="title" class="col-sm-2 control-label">Username</label>
+                            <div class="col-sm-9">
+                                <input type="text" class="form-control test2" name="username" value="cde">
+                            </div>
+                            <label for="title" class="col-sm-2 control-label">Password</label>
+                            <div class="col-sm-9">
+                                <input type="text" class="form-control test2" name="password" value="Spitfire_12345">
+                            </div>
+                            <label for="title" class="col-sm-2 control-label">Location</label>
+                            <div class="col-sm-9">
+                                <input type="text" class="form-control test2" name="location" value="">
+                            </div>
+                            <label for="title" class="col-sm-2 control-label">Rack</label>
+                            <div class="col-sm-9">
+                                <input type="text" class="form-control test2" name="rack" value="">
+                            </div>
+                            <label for="title" class="col-sm-2 control-label">BAMS ID</label>
+                            <div class="col-sm-9">
+                                <input type="text" class="form-control test2" name="bams" value="">
+                            </div>
+                            <label for="title" class="col-sm-2 control-label">TopoName</label>
+                            <div class="col-sm-9">
+                                <input type="text" class="form-control test2" name="topo" value="">
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <span id="errormsg" style="color: red"></span>
+                    <button type="button" class="btn btn-default left" data-dismiss="modal">cancel</button>
+                    <button type="button" class="btn btn-primary" id="btnSave">save</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="addIxia" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="myModalLabel">Add Ixia</h4>
+                </div>
+                <div class="modal-body">
+                    <form id="fm2" class="form-horizontal">
+                        {% csrf_token %}
+                        <div class="form-group">
+                            <label for="title" class="col-sm-3 control-label">Chassis ip</label>
+                            <div class="col-sm-8">
+                                <input type="text" class="form-control test2" name="ip" value="">
+                            </div>
+                            <label for="title" class="col-sm-3 control-label">Chassis Info</label>
+                            <div class="col-sm-8">
+                                <input type="text" class="form-control test2" name="cinfo" value="" placeholder="location,rack,bams number">
+                            </div>
+                            <label for="title" class="col-sm-3 control-label">Slot No.</label>
+                            <div class="col-sm-8">
+                                <input type="text" class="form-control test2" name="slot" value="" placeholder="separate the slot Numbers by ,">
+                            </div>
+                            <label for="title" class="col-sm-3 control-label">Slot Bams</label>
+                            <div class="col-sm-8">
+                                <input type="text" class="form-control test2" name="slotbams" value="" placeholder="separate the slot Numbers by ,">
+                            </div>
+                            <label for="title" class="col-sm-3 control-label">Ports No.</label>
+                            <div class="col-sm-8">
+                                <input type="text" class="form-control test2" name="ports" value="" placeholder="separate the slot Numbers by ,">
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <span id="errormsg" style="color: red"></span>
+                    <button type="button" class="btn btn-default left" data-dismiss="modal">cancel</button>
+                    <button type="button" class="btn btn-primary" id="ixiaSave">save</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</nav>
+{% block content %}{% endblock %}
+{% if request.session.user_info %}
+    <script type="text/javascript">
+        $('.addNode').click(function () {
+                $('#addNode').modal('show');
+            });
+        $('.addIxia').click(function () {
+                $('#addIxia').modal('show');
+            });
+        $('#btnSave').click(function () {
+            var postdata={};
+            $('#addNode').find('input').each(function () {
+                var v=$(this).val();
+                var n=$(this).attr('name');
+                postdata[n]=v;
+            });
+            {#console.log(postdata);#}
+            $.ajax({
+                url:'/r6k/add-node',
+                type:'POST',
+                data:postdata,
+                success:function (arg) {
+                    //arg字符串
+                    //JSON.parse将字符串转换成字典，相当于python中的jason.load
+                    var dict=JSON.parse(arg);
+                    console.log(dict);
+                    if(dict.status){
+                        window.location.href="/r6k/nodes";
+                    }else {
+                        alert(dict.message);
+                    }
+                }
+            });
+        });
+        $('#ixiaSave').click(function () {
+            var postdata={};
+            $('#addIxia').find('input').each(function () {
+                var v=$(this).val();
+                var n=$(this).attr('name');
+                postdata[n]=v;
+            });
+            {#console.log(postdata);#}
+            $.ajax({
+                url:'/r6k/add-ixia',
+                type:'POST',
+                data:postdata,
+                success:function (arg) {
+                    //arg字符串
+                    //JSON.parse将字符串转换成字典，相当于python中的jason.load
+                    var dict=JSON.parse(arg);
+                    console.log(dict);
+                    if(dict.status){
+                        window.location.href="/r6k/ixia";
+                    }else {
+                        alert(dict.message);
+                    }
+                }
+            });
+        });
+    </script>
+{% endif %}
+{% block js %}{% endblock %}
+</body>
+</html>

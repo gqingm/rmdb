@@ -1,0 +1,208 @@
+{% extends 'base.html' %}
+{% load filter_tags %}
+{% block title %}R6K ixia utilization-{{ classify }}{% endblock %}
+{% block css %}
+<style>
+    th{
+        text-align: center;
+    }
+    #myBtn {
+        display: none; /* 默认隐藏 */
+        position: fixed;
+        bottom: 20px;
+        right: 30px;
+        z-index: 99;
+        border: none;
+        outline: none;
+        background-color: red; /* 设置背景颜色，你可以设置自己想要的颜色或图片 */
+        color: white; /* 文本颜色 */
+        cursor: pointer;
+        padding: 15px;
+        border-radius: 10px; /* 圆角 */
+    }
+    #myBtn:hover {
+        background-color: #555;
+    }
+</style>
+{% endblock %}
+{% block content %}
+<div class="col-md-12">
+<div id="main" class="pull-left" style="margin-left: -25px;">
+<div class="container-fluid">
+    <div class="row" style="margin-top: 55px;text-align: center">
+        <div class="col-md-12">
+            <div id="table0_wrapper" class="dataTables_wrapper form-inline dt-bootstrap no-footer">
+                <div class="row">
+                    <div class="col-md-6 tableHeader" style="text-align: center;">
+                        <span class="navbar-left" style="display: inline;">Total:{{ total }}</span>
+                        <i style="color: darkblue;font-size: 16px;">Ixia utilization {{ classify }}</i>
+                    </div>
+                </div>
+                <table data-name="ixias_info" class="table table-striped table-bordered table-condensed dataTable no-footer"
+                       id="table0" role="grid" aria-describedby="table0_info" style="width: 100%;">
+                    <thead>
+                    <tr role="row">
+                        <form>
+                        {% csrf_token %}
+                            <input type="text" name="s" id="startdate" style="display: none" value={{ filter_for_css.s }}>
+                            <input type="text" name="e" id="enddate" style="display: none" value={{ filter_for_css.e }}>
+                            {% if ixias.count %}
+                                {% buildIxiaFilterTable filter_for_css filter_list %}
+                            {% else %}
+                                <th width="150px">
+                                    <select name="_i" id="ip" style="width: 120px">
+                                        <option></option>
+                                    </select>
+                                </th>
+                                <th width="40px">
+                                    <select name="_c" id="card" style="width: 32px;">
+                                        <option></option>
+                                    </select>
+                                </th>
+                                <th width="175px">
+                                    <input type="text" name="_ct" placeholder="search for card info" id="cardinfo" style="height: 19px;width: 117px;">
+                                </th>
+                                <th></th>
+                                <th>
+                                    <select name="_l" id="line" style="width: 47px;">
+                                        <option></option>
+                                    </select>
+                                </th>
+                                <th>
+                                    <input type="text" name="_u" id="user" placeholder="search for user" style="width: 70px;height: 19px">
+                                </th>
+                                <th>
+                                    <input type="text" name="_p" id="purpose" placeholder="search for purpose" style="width: 138px;height: 19px">
+                                </th>
+                            {% endif %}
+                            <th style="width:87px;"><input type="submit" style="height: 19px;text-align: center;font-size: smaller;vertical-align:middle" value="filter"></th>
+                        </form>
+                        {% if date_list.0|date:"Y-m" == date_list|last|date:"Y-m" %}
+                            <th style="text-align: center" class="noSort" colspan={{ month_days }} rowspan="1"
+                                data-original-title="" title="">{{ date_list.0|date:"Y-m" }}
+                            </th>
+                        {% else %}
+                            {% for month in monthList %}
+                                <th style="text-align: center" class="noSort" colspan={{ month.2 }} rowspan="1"
+                                    data-original-title="" title="">{{ month.0 }}-{{ month.1 }}
+                                </th>
+                            {% endfor %}
+                        {% endif %}
+                        <th style="text-align: center;vertical-align: middle" class="noSort" rowspan="2" colspan="1">Avg</th>
+                    </tr>
+                    <tr>
+                        <th rowspan="1" class="sorting" colspan="1" style="width: 80px">IP Address</th>
+                        <th rowspan="1" class="sorting" colspan="1" style="width: 44px">Card</th>
+                        <th rowspan="1" class="sorting" colspan="1" style="width: 90px">Card Info</th>
+                        <th rowspan="1" class="sorting" colspan="1" style="width: 39px">Port</th>
+                        <th rowspan="1" class="sorting" colspan="1" style="width: 50px">Line</th>
+                        <th rowspan="1" class="sorting" colspan="1" style="width: 143px">User</th>
+                        <th rowspan="1" class="sorting" colspan="1" style="width: 154px">Purpose</th>
+                        <th rowspan="1" class="sorting" colspan="1" style="width: 87px">UsingCycle</th>
+                        {% for date in date_list %}
+                            {% if date.weekday == 6 or date.weekday == 5 %}
+                                <th class="noSort weekend sorting_disabled" rowspan="1" colspan="1" aria-label="10"
+                                data-original-title="" title="" style="width: 9px;background-color: yellow">{{ date|date:"d" }}
+                            {% else %}
+                                <th class="noSort weekend sorting_disabled" rowspan="1" colspan="1" aria-label="10"
+                                data-original-title="" title="" style="width: 9px;">{{ date|date:"d" }}
+                            {% endif %}
+                        {% endfor %}
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for row in ixias %}
+                        {% if row.card.get.status == 0 %}
+                            <tr role="row" class="top">
+                        {% elif row.card.get.status == 1 %}
+                            <tr role="row" class="top" style="background-color: #7a7a7a">
+                        {% elif row.card.get.status == 2 %}
+                            <tr role="row" class="top" style="background-color: red">
+                        {% elif row.card.get.status == 3 %}
+                            <tr role="row" class="top" style="background-color: #6f42c1">
+                        {% endif %}
+                            <td name="ip" style="display:table-cell; vertical-align:middle;text-align: left" ipid="{{ row.card.get.ip.id }}">
+                                {{ row.card.get.ip.ip }}
+                                {{ row.card.get.ip.chassis_info|linebreaksbr }}
+                            </td>
+                            <td name="card" ip="{{ row.card.get.ip.ip }}" cardid="{{ row.card.get.id }}" style="display:table-cell; vertical-align:middle">{{ row.card.get.slot }}</td>
+                            <td name="cardstatus" status="{{ row.card.get.status }}" style="display: none">{{ row.card.get.get_status_display }}</td>
+                            <td name="cardinfo" style="display:table-cell; vertical-align:middle;text-align: left">{{ row.card.get.card_info|linebreaksbr }}</td>
+                            <td name="portnum" style="display:table-cell; vertical-align:middle">{{ row.port_num }}</td>
+                            <td name="line" style="display:table-cell; vertical-align:middle">{{ row.user.get_line_display }}</td>
+                            <td name="user" style="overflow:hidden;white-space:nowrap;text-overflow: ellipsis;display:table-cell; vertical-align:middle">{{ row.user }}</td>
+                            <td name="purpose" style="overflow:hidden;white-space:nowrap;text-overflow: ellipsis;vertical-align:middle" title="{{ row.purpose }}">{{ row.purpose }}</td>
+                            <td name="usecycle" style="display:table-cell; vertical-align:middle">{{ row.usecycle }}</td>
+                            {% for useage in row.useages %}
+                                {% if useage.1 == 0 %}
+                                    {% if useage.0.weekday == 6 or useage.0.weekday == 5 %}
+                                        <td class="nodata" style="display:table-cell; vertical-align:middle;background-color: yellow">0</td>
+                                    {% else %}
+                                        <td class="nodata" style="display:table-cell; vertical-align:middle">0</td>
+                                    {% endif %}
+                                {% else %}
+                                    {% if useage.0.weekday == 6 or useage.0.weekday == 5 %}
+                                        <td class="nodata" style="display:table-cell; vertical-align:middle;background-color: yellow">{{ useage.1|floatformat:2 }}</td>
+                                    {% else %}
+                                        <td class="nodata" style="display:table-cell; vertical-align:middle">{{ useage.1|floatformat:2 }}</td>
+                                    {% endif %}
+                                {% endif %}
+                            {% endfor %}
+                            <td class="nodata">{{ row.useage_avg|floatformat:2 }}</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+</div>
+<div>
+    <button onclick="topFunction()" id="myBtn">Back to Top</button>
+</div>
+{% endblock %}
+{% block js %}
+    <script type="text/javascript">
+        $(document).ready(function(){
+            //合并单元格
+            var ips = {{ count.0 }}
+            var cards = {{ count.1 }}
+            var ipele=$("td[name='ip']");
+            var cardele=$("td[name='card']");
+            var cardinfo=$("td[name='cardinfo']");
+            var ip=card=1;
+            for(var t=0;t<{{ total }};t++){
+                if(ip==1){
+                    ip=ips.shift();
+                    ipele.eq(t).attr('rowspan',ip);
+                }else {
+                    ipele.eq(t).remove();
+                    ip--;
+                }
+                if(card==1){
+                    card=cards.shift();
+                    cardele.eq(t).attr('rowspan',card);
+                    cardinfo.eq(t).attr('rowspan',card);
+                }else {
+                    cardele.eq(t).remove();
+                    cardinfo.eq(t).remove();
+                    card--;
+                }
+            }
+        });
+        window.onscroll = function() {scrollFunction()};
+        function scrollFunction() {
+            if (document.body.scrollTop > 20 || document.documentElement.scrollTop > 20) {
+                document.getElementById("myBtn").style.display = "block";
+            } else {
+                document.getElementById("myBtn").style.display = "none";
+            }
+        }
+        function topFunction() {
+            document.body.scrollTop = 0;
+            document.documentElement.scrollTop = 0;
+        }
+    </script>
+{% endblock %}

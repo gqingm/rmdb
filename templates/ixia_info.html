@@ -1,0 +1,789 @@
+{% extends 'base.html' %}
+{% load filter_tags %}
+{% block title %}R6K ixia info{% endblock %}
+{% block css %}
+<style>
+    th{
+        text-align: center;
+    }
+    #ixia{
+        background-color: #3333;
+    }
+    #myBtn {
+        display: none; /* 默认隐藏 */
+        position: fixed;
+        bottom: 20px;
+        right: 30px;
+        z-index: 99;
+        border: none;
+        outline: none;
+        background-color: red; /* 设置背景颜色，你可以设置自己想要的颜色或图片 */
+        color: white; /* 文本颜色 */
+        cursor: pointer;
+        padding: 15px;
+        border-radius: 10px; /* 圆角 */
+    }
+    #myBtn:hover {
+        background-color: #555;
+    }
+</style>
+{% endblock %}
+{% block content %}
+<div class="col-md-12">
+<div id="main" class="pull-left" style="margin-left: -25px;">
+<div class="container-fluid">
+    <div class="row" style="margin-top: 55px;text-align: center">
+        <div class="col-md-12">
+            <div id="table0_wrapper" class="dataTables_wrapper form-inline dt-bootstrap no-footer">
+                <div class="row">
+                    <div class="col-md-6 tableHeader" style="text-align: center;position: fixed">
+                        <span class="navbar-left" style="display: inline;">Total:{{ total }}</span>
+                        {% if request.session.user_info %}
+                            <a id="check_cancel" class="navbar-left btn btn-default no-radius" style="height: 20px;padding: 0px 12px" onclick="selectNone();">
+                                <i class="fa fa-minus-square-o"></i>取消
+                            </a>
+                            <a id="check_reverse" class="navbar-left btn btn-default no-radius" style="height: 20px;padding: 0px 12px" onclick="selectInverse();">
+                                <i class="fa fa-check-square-o"></i>反选
+                            </a>
+                            {% if request.session.user_info.superuser %}
+                                <a id="do_delete" class="navbar-left btn btn-default no-radius" style="height: 20px;padding: 0px 12px" onclick="deletePort();">
+                                    <i class="fa fa-trash"></i>删除
+                                </a>
+                            {% endif %}
+                            <a id="edit_mode_target" class="navbar-left btn btn-default no-radius" style="height: 20px;padding: 0px 12px" onclick="editMode();">
+                                <i class="fa fa-pencil-square-o"></i>
+                                <span>Enter-Edit-Mode</span>
+                            </a>
+                            <a id="do_save" class="navbar-left btn btn-default no-radius" style="height: 20px;padding: 0px 12px" onclick="saveDatas();">
+                                <i class="fa fa-floppy-o"></i>Save
+                            </a>
+                            <a id="do_refresh" class="navbar-left btn btn-default no-radius" style="height: 20px;padding: 0px 12px" onclick="refresh();">
+                                <i class="fa fa-refresh"></i>Refresh
+                            </a>
+                        {% endif %}
+                        <i style="color: darkblue;font-size: 16px;">Ixia Info</i>
+                    </div>
+                    <input id="downIxia" class="navbar-left" type="button" value="Export" name="ixia" style="height: 20px;border-top: 0;position: fixed" onclick="downData();">
+                </div>
+                <table data-name="ixia_info" class="table table-striped table-bordered table-condensed dataTable no-footer"
+                       id="table0" role="grid" aria-describedby="table0_info" style="table-layout:fixed;width: 2435px;margin-top: 20px">
+                    <thead>
+                    <tr role="row">
+                        <form>
+                            {% if request.session.user_info %}
+                                <th width="55px" id="checkall" onclick="selectAll();"><i class="fa fa-check-square"></i>全选</th>
+                            {% else %}
+                                <th width="55px"></th>
+                            {% endif %}
+                            {% if filter_for_css %}
+                                {% build_ixia_filter filter_for_css filter_list %}
+                            {% else %}
+                            <th width="150px">
+                                <select name="_i" id="ip" style="width: 120px">
+                                    <option></option>
+                                    {% for ip in filter_list.ip %}
+                                        <option value="{{ ip.ip }}">{{ ip.ip }}</option>
+                                    {% endfor %}
+                                </select>
+                            </th>
+                            <th width="40px">
+                                <select name="_c" id="card" style="width: 32px;">
+                                    <option></option>
+                                    {% for card in filter_list.card %}
+                                        <option value="{{ card.slot }}">{{ card.slot }}</option>
+                                    {% endfor %}
+                                </select>
+                            </th>
+                            <th width="175px">
+                                <input type="text" name="_ct" placeholder="search for card info" id="cardinfo" style="height: 19px;width: 117px;">
+                            </th>
+                            <th></th>
+                            <th>
+                                <select name="_s" id="status" style="width: 46px;">
+                                    <option></option>
+                                    {% for status in filter_list.status %}
+                                        {% ixiastatus status.status %}
+                                    {% endfor %}
+                                </select>
+                            </th>
+                            <th style="width:86px;">
+                                <select name="_sw" id="switch" style="width: 66px;">
+                                    <option></option>
+                                    {% for switch in filter_list.switch %}
+                                        {% if switch.switch != '' %}
+                                            <option value="{{ switch.switch }}">{{ switch.switch }}</option>
+                                        {% endif %}
+                                    {% endfor %}
+                                </select>
+                            </th>
+                            <th>
+                                <select name="_l" id="line" style="width: 47px;">
+                                    <option></option>
+                                    {% for line in filter_list.line %}
+                                        <option value="{{ line.line }}">{{ line.line }}</option>
+                                    {% endfor %}
+                                </select>
+                            </th>
+                            <th>
+                                <input type="text" name="_u" id="user" placeholder="search for user" style="width: 70px;height: 19px">
+                            </th>
+                            <th>
+                                <input type="text" name="_p" id="purpose" placeholder="search for purpose" style="width: 138px;height: 19px">
+                            </th>
+                            {% endif %}
+                            <th style="width:94px;"></th>
+                            <th style="width:87px;"><input type="submit" style="height: 19px;text-align: center;font-size: smaller;vertical-align:middle" value="filter"></th>
+                        </form>
+                        {% if date_list.0|date:"Y-m" == date_list.29|date:"Y-m" %}
+                            <th style="text-align: center" class="noSort" colspan="30" rowspan="1"
+                                data-original-title="" title="">{{ date_list.0|date:"Y-m" }}
+                            </th>
+                        {% else %}
+                            <th style="text-align: center" class="noSort" colspan={{ pre_month_days }} rowspan="1"
+                                    data-original-title="" title="">{{ date_list.0|date:"Y-m" }}
+                                </th>
+                            <th style="text-align: center" class="noSort" colspan="{{ date_list.29|date:"d" }}" rowspan="1"
+                                data-original-title="" title="">{{ date_list.29|date:"Y-m" }}
+                            </th>
+                        {% endif %}
+                    </tr>
+                    <tr>
+                        <th rowspan="1" class="sorting" colspan="1" style="width: 20px;">Select</th>
+                        <th rowspan="1" class="sorting" colspan="1" style="width: 80px">IP Address</th>
+                        <th rowspan="1" class="sorting" colspan="1" style="width: 44px">Card</th>
+                        <th rowspan="1" class="sorting" colspan="1" style="width: 90px">Card Info</th>
+                        <th rowspan="1" class="sorting" colspan="1" style="width: 39px">Port</th>
+                        <th rowspan="1" class="sorting" colspan="1" style="width: 57px">Status</th>
+                        <th rowspan="1" class="sorting" colspan="1" style="width: 55px">Switch</th>
+                        <th rowspan="1" class="sorting" colspan="1" style="width: 50px">Line</th>
+                        <th rowspan="1" class="sorting" colspan="1" style="width: 143px">User</th>
+                        <th rowspan="1" class="sorting" colspan="1" style="width: 154px">Purpose</th>
+                        <th rowspan="1" class="sorting" colspan="1" style="width: 87px">UsingCycle</th>
+                        <th rowspan="1" class="sorting" colspan="1" style="width: 87px">Comments</th>
+                        {% for date in date_list %}
+                            {% if date.weekday == 6 or date.weekday == 5 %}
+                                <th class="noSort weekend sorting_disabled" rowspan="1" colspan="1" aria-label="10"
+                                data-original-title="" title="" style="width: 9px;background-color: yellow">{{ date|date:"d" }}
+                            {% else %}
+                                <th class="noSort weekend sorting_disabled" rowspan="1" colspan="1" aria-label="10"
+                                data-original-title="" title="" style="width: 9px;">{{ date|date:"d" }}
+                            {% endif %}
+                        {% endfor %}
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for row in port_objs %}
+                        {% if row.card.get.status == 0 %}
+                            <tr role="row" class="top">
+                        {% elif row.card.get.status == 1 %}
+                            <tr role="row" class="top" style="background-color: #7a7a7a">
+                        {% elif row.card.get.status == 2 %}
+                            <tr role="row" class="top" style="background-color: red">
+                        {% elif row.card.get.status == 3 %}
+                            <tr role="row" class="top" style="background-color: #6f42c1">
+                        {% endif %}
+                            <td style="vertical-align:middle"><input type="checkbox" value={{ row.id }}></td>
+                            <td name="ip" style="display:table-cell; vertical-align:middle;text-align: left" ipid="{{ row.card.get.ip.id }}">
+                                {{ row.card.get.ip.ip }}
+                                {{ row.card.get.ip.chassis_info|linebreaksbr }}
+                            </td>
+                            <td name="card" ip="{{ row.card.get.ip.ip }}" cardid="{{ row.card.get.id }}" style="display:table-cell; vertical-align:middle">{{ row.card.get.slot }}</td>
+                            <td name="cardstatus" status="{{ row.card.get.status }}" style="display: none">{{ row.card.get.get_status_display }}</td>
+                            <td name="cardinfo" style="display:table-cell; vertical-align:middle;text-align: left">{{ row.card.get.card_info|linebreaksbr }}</td>
+                            <td name="portnum" style="display:table-cell; vertical-align:middle">{{ row.port_num }}</td>
+                            <td name="portstatus" style="display:table-cell; vertical-align:middle">{{ row.get_status_display }}</td>
+                            <td name="switch" style="display:table-cell; vertical-align:middle">{{ row.switch }}</td>
+                            <td name="line" style="display:table-cell; vertical-align:middle">{{ row.user.get_line_display }}</td>
+                            <td name="user" style="overflow:hidden;white-space:nowrap;text-overflow: ellipsis;display:table-cell; vertical-align:middle">{{ row.user }}</td>
+{#                            <td name="purpose" style="overflow:hidden;white-space:nowrap;text-overflow: ellipsis;display:table-cell; vertical-align:middle">{{ row.purpose }}</td>#}
+                            <td name="purpose" style="overflow:hidden;white-space:nowrap;text-overflow: ellipsis;vertical-align:middle" title="{{ row.purpose }}">{{ row.purpose }}</td>
+                            <td name="usecycle" style="display:table-cell; vertical-align:middle">{{ row.usecycle }}</td>
+                            <td name="comments" style="overflow:hidden;white-space:nowrap;text-overflow: ellipsis;vertical-align:middle" title="{{ row.comments }}">{{ row.comments }}</td>
+                            {% for useage in row.useages %}
+                                {% if useage.1 == 0 %}
+                                    {% if useage.0.weekday == 6 or useage.0.weekday == 5 %}
+                                        <td class="nodata" style="display:table-cell; vertical-align:middle;background-color: yellow">0</td>
+                                    {% else %}
+                                        <td class="nodata" style="display:table-cell; vertical-align:middle">0</td>
+                                    {% endif %}
+                                {% else %}
+                                    {% if useage.0.weekday == 6 or useage.0.weekday == 5 %}
+                                        <td class="nodata" style="display:table-cell; vertical-align:middle;background-color: yellow">{{ useage.1|floatformat:2 }}</td>
+                                    {% else %}
+                                        <td class="nodata" style="display:table-cell; vertical-align:middle">{{ useage.1|floatformat:2 }}</td>
+                                    {% endif %}
+                                {% endif %}
+                            {% endfor %}
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+</div>
+<div>
+    <button onclick="topFunction()" id="myBtn">Back to Top</button>
+</div>
+    <div class="modal fade" id="delete_port" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="display: none;">
+        <div class="modal-dialog" role="document">
+            <div class="alert alert-danger" role="alert">
+                <h4 style="text-align: center">Are you sure to delete the selected ports?</h4>
+                <p style="text-align: center">The corresponding utilization statistics info will be deleted!</p>
+                <div>
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                    <button id="delConfirm" type="button" class="btn btn-warning right">Confirm</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="editChassis" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span>
+                    </button>
+                    <h4 class="modal-title" id="myModalLabel" style="text-align: center">Edit Chassis Info</h4>
+                </div>
+                <div class="modal-body">
+                    <form id="fm3" class="form-horizontal">
+                        {% csrf_token %}
+                        <input type="text" name="ip_id" value="" style="display: none">
+                        <div class="form-group">
+                            <label for="ip" class="col-sm-2 control-label">Chassisip</label>
+                            <div class="col-sm-9">
+                                <input type="text" class="form-control test2" name="ip" value="">
+                            </div>
+                            <label for="console" class="col-sm-2 control-label">Location</label>
+                            <div class="col-sm-9">
+                                <input type="text" class="form-control test2" name="location" value="">
+                            </div>
+                            <label for="user" class="col-sm-2 control-label">Rack</label>
+                            <div class="col-sm-9">
+                                <input type="text" class="form-control test2" name="rack" value="">
+                            </div>
+                            <label for="username" class="col-sm-2 control-label">Bamsid</label>
+                            <div class="col-sm-9">
+                                <input type="text" class="form-control test2" name="chbams" value="">
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <span id="errormsg" style="color: red"></span>
+                    <button type="button" class="btn btn-default left" data-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-danger center" style="margin-right: 187px" onclick="deleteChassis();">Delete</button>
+                    <button type="button" class="btn btn-primary" id="SaveChassis">Save</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="editCard" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span>
+                    </button>
+                    <h4 class="modal-title" id="myModalLabel" style="text-align: center">Edit Card Info</h4>
+                </div>
+                <div class="modal-body">
+                    <form id="fm_ixia" class="form-horizontal">
+                        {% csrf_token %}
+                        <input type="text" name="card_id" value="" style="display: none">
+                        <div class="form-group">
+                            <label for="card" class="col-sm-2 control-label">Chassisip</label>
+                            <div class="col-sm-9">
+                                <input type="text" class="form-control test2" name="ip" value="">
+                            </div>
+                            <label for="console" class="col-sm-2 control-label">Slot</label>
+                            <div class="col-sm-9">
+                                <input type="text" class="form-control test2" name="slot" value="">
+                            </div>
+                            <label for="user" class="col-sm-2 control-label">Bams</label>
+                            <div class="col-sm-9">
+                                <input type="text" class="form-control test2" name="cardbams" value="">
+                            </div>
+                            <label for="status" class="col-sm-2 control-label">Status</label>
+                            <div class="col-sm-9">
+                                <select name="status" id="status" class="form-control test2 selector">
+                                    <option value="0">normal</option>
+                                    <option value="1">broken</option>
+                                    <option value="2">return to factory</option>
+                                    <option value="3">borrow</option>
+                                </select>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <span id="errormsg" style="color: red"></span>
+                    <button type="button" class="btn btn-default left" data-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-danger" style="margin-right: 187px" onclick="deleteCard();">Delete</button>
+                    <button type="button" class="btn btn-primary" id="SaveCard">Save</button>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+{% block js %}
+<script type="text/javascript">
+    $(document).ready(function(){
+        //合并单元格
+        var ips = {{ count.0 }}
+        var cards = {{ count.1 }}
+        var ipele=$("td[name='ip']");
+        var cardele=$("td[name='card']");
+        var cardinfo=$("td[name='cardinfo']");
+        var ip=card=1;
+        for(var t=0;t<{{ total }};t++){
+            if(ip==1){
+                ip=ips.shift();
+                ipele.eq(t).attr('rowspan',ip);
+            }else {
+                ipele.eq(t).remove();
+                ip--;
+            }
+            if(card==1){
+                card=cards.shift();
+                cardele.eq(t).attr('rowspan',card);
+                cardinfo.eq(t).attr('rowspan',card);
+            }else {
+                cardele.eq(t).remove();
+                cardinfo.eq(t).remove();
+                card--;
+            }
+        }
+    });
+    window.onscroll = function() {scrollFunction()};
+    function scrollFunction() {
+        if (document.body.scrollTop > 20 || document.documentElement.scrollTop > 20) {
+            document.getElementById("myBtn").style.display = "block";
+        } else {
+            document.getElementById("myBtn").style.display = "none";
+        }
+    }
+    function topFunction() {
+        document.body.scrollTop = 0;
+        document.documentElement.scrollTop = 0;
+    }
+    {% if request.session.user_info %}
+        function selectAll(){
+            $("[type='checkbox']").prop("checked","checked");
+            var olddata=$('#edit_mode_target').attr('class');
+            if(olddata.indexOf('btn-warning') != -1){
+                $('tbody').find('tr').each(function () {
+                    olddata=$(this).attr('class');
+                    if(olddata.indexOf('success') == -1){
+                        TrIntoEdit(this);
+                    }
+                });
+            }
+        }
+        function selectNone(){
+            var olddata=$('#edit_mode_target').attr('class');
+            if(olddata.indexOf('btn-warning') != -1){
+                $('tbody').find('tr').each(function () {
+                    TrOutEdit(this);
+                });
+            }
+            $("[type='checkbox']").prop("checked","");
+        }
+        function selectInverse(){
+            $("[type='checkbox']").each(function () {
+                $(this).prop("checked", !$(this).prop("checked"));
+            });
+            var olddata=$('#edit_mode_target').attr('class');
+            if(olddata.indexOf('btn-warning') != -1){
+                $('tbody').find('tr').each(function () {
+                    if($(this).find("[type='checkbox']").prop("checked")==true){
+                        TrIntoEdit(this);
+                    }else {
+                        TrOutEdit(this);
+                    }
+                });
+            }
+        }
+        function refresh() {
+            window.location.reload();
+        }
+        function TrIntoEdit(tr) {
+            $(tr).addClass('success');
+            $(tr).attr('edit-enable',true);
+            //替换portstatus
+            olddata=$(tr).find("td[name='portstatus']").text();
+            var sel=document.createElement('select');
+            $(sel).attr('name','portstatus').attr('original',olddata).attr('style','width:100%');
+            var opt = document.createElement('option');
+            if (olddata == 'booked') {
+                $(opt).text(olddata).attr('value',olddata).appendTo($(sel));
+                $(opt).prop('selected', true);
+            } else {
+                $(opt).text('booked').attr('value','booked').appendTo($(sel));
+            }
+            opt = document.createElement('option');
+            if (olddata == 'broken') {
+                $(opt).text(olddata).attr('value',olddata).appendTo($(sel));
+                $(opt).prop('selected', true);
+            } else {
+                $(opt).text('broken').attr('value','broken').appendTo($(sel));
+            }
+            opt = document.createElement('option');
+            if (olddata == 'release') {
+                $(opt).text(olddata).attr('value',olddata).appendTo($(sel));
+                $(opt).prop('selected', true);
+            } else {
+                $(opt).text('release').attr('value','release').appendTo($(sel));
+            }
+            $(tr).find("td[name='portstatus']").empty().append(sel);
+            //替换switch
+            olddata=$(tr).find("td[name='switch']").text();
+            if(olddata=='None'){olddata=''}
+            sel=document.createElement('input');
+            $(sel).attr('name','switch').attr('original',olddata).attr('style','width:100%;height:22px;').attr('value',olddata);
+            $(tr).find("td[name='switch']").empty().append(sel);
+            {#//替换line#}
+            {#olddata=$(tr).find("td[name='line']").text();#}
+            {#sel=document.createElement('select');#}
+            {#$(sel).attr('name','line').attr('original',olddata).attr('style','width:100%');#}
+            {#opt = document.createElement('option');#}
+            {#if (olddata == 'NT') {#}
+            {#    $(opt).text(olddata).attr('value',olddata).appendTo($(sel));#}
+            {#    $(opt).prop('selected', true);#}
+            //} else {
+            {#    $(opt).text('NT').attr('value','NT').appendTo($(sel));#}
+            //}
+            {#opt = document.createElement('option');#}
+            {#if (olddata == 'FDU A') {#}
+            {#    $(opt).text(olddata).attr('value',olddata).appendTo($(sel));#}
+            {#    $(opt).prop('selected', true);#}
+            //} else {
+            {#    $(opt).text('FDU A').attr('value','FDU A').appendTo($(sel));#}
+            //}
+            {#opt = document.createElement('option');#}
+            {#if (olddata == 'FDU C') {#}
+            {#    $(opt).text(olddata).attr('value',olddata).appendTo($(sel));#}
+            {#    $(opt).prop('selected', true);#}
+            //} else {
+            {#    $(opt).text('FDU C').attr('value','FDU C').appendTo($(sel));#}
+            //}
+            {#opt = document.createElement('option');#}
+            {#if (olddata == 'FDU D') {#}
+            {#    $(opt).text(olddata).attr('value',olddata).appendTo($(sel));#}
+            {#    $(opt).prop('selected', true);#}
+            //} else {
+            {#    $(opt).text('FDU D').attr('value','FDU D').appendTo($(sel));#}
+            //}
+            {#opt = document.createElement('option');#}
+            {#if (olddata == 'FDU E') {#}
+            {#    $(opt).text(olddata).attr('value',olddata).appendTo($(sel));#}
+            {#    $(opt).prop('selected', true);#}
+            //} else {
+            {#    $(opt).text('FDU E').attr('value','FDU E').appendTo($(sel));#}
+            //}
+            {#opt = document.createElement('option');#}
+            {#if (olddata == 'FDU F') {#}
+            {#    $(opt).text(olddata).attr('value',olddata).appendTo($(sel));#}
+            {#    $(opt).prop('selected', true);#}
+            //} else {
+            {#    $(opt).text('FDU F').attr('value','FDU F').appendTo($(sel));#}
+            //}
+            {#opt = document.createElement('option');#}
+            {#if (olddata == 'FDU G') {#}
+            {#    $(opt).text(olddata).attr('value',olddata).appendTo($(sel));#}
+            {#    $(opt).prop('selected', true);#}
+            //} else {
+            {#    $(opt).text('FDU G').attr('value','FDU G').appendTo($(sel));#}
+            //}
+            {#opt = document.createElement('option');#}
+            {#if (olddata == 'FDU H') {#}
+            {#    $(opt).text(olddata).attr('value',olddata).appendTo($(sel));#}
+            {#    $(opt).prop('selected', true);#}
+            //} else {
+            {#    $(opt).text('FDU H').attr('value','FDU H').appendTo($(sel));#}
+            //}
+            {#$(tr).find("td[name='line']").empty().append(sel);#}
+            //替换user
+            olddata=$(tr).find("td[name='user']").text();
+            if(olddata=='None'){olddata=''}
+            sel=document.createElement('input');
+            $(sel).attr('name','user').attr('original',olddata).attr('style','width:100%;height:22px;').attr('value',olddata);
+            $(tr).find("td[name='user']").empty().append(sel);
+            //替换purpose
+            olddata=$(tr).find("td[name='purpose']").text();
+            if(olddata=='None'){olddata=''}
+            sel=document.createElement('input');
+            $(sel).attr('name','purpose').attr('original',olddata).attr('style','width:100%;height:22px;').attr('value',olddata);
+            $(tr).find("td[name='purpose']").empty().append(sel);
+            //替换usecycle
+            olddata=$(tr).find("td[name='usecycle']").text();
+            if(olddata=='None'){olddata=''}
+            sel=document.createElement('input');
+            $(sel).attr('name','usecycle').attr('original',olddata).attr('style','width:100%;height:22px;').attr('value',olddata);
+            $(tr).find("td[name='usecycle']").empty().append(sel);
+            //替换comments
+            olddata=$(tr).find("td[name='comments']").text();
+            if(olddata=='None'){olddata=''}
+            sel=document.createElement('input');
+            $(sel).attr('name','comments').attr('original',olddata).attr('style','width:100%;height:22px;').attr('value',olddata);
+            $(tr).find("td[name='comments']").empty().append(sel);
+        }
+        function TrOutEdit(tr) {
+            var olddata=$(tr).attr('class');
+            if(olddata.indexOf('success') != -1){
+                $(tr).removeClass('success');
+                $(tr).attr('edit-enable',false);
+                olddata=$(tr).find("select[name='portstatus']").val();
+                $(tr).find("td[name='portstatus']").empty().text(olddata);
+                olddata=$(tr).find("input[name='switch']").val();
+                $(tr).find("td[name='switch']").empty().text(olddata);
+                olddata=$(tr).find("select[name='line']").val();
+                $(tr).find("td[name='line']").empty().text(olddata);
+                olddata=$(tr).find("input[name='user']").val();
+                $(tr).find("td[name='user']").empty().text(olddata);
+                olddata=$(tr).find("input[name='purpose']").val();
+                $(tr).find("td[name='purpose']").empty().text(olddata);
+                olddata=$(tr).find("input[name='usecycle']").val();
+                $(tr).find("td[name='usecycle']").empty().text(olddata);
+                olddata=$(this).find("input[name='comments']").val();
+                $(tr).find("td[name='comments']").empty().text(olddata);
+            }
+        }
+        function editMode() {
+            var olddata=$('#edit_mode_target').attr('class');
+            if(olddata.indexOf('btn-warning') == -1){
+                $('#edit_mode_target').addClass('btn-warning').find('span').text('Quit-Edit-Mode');
+                $('tbody').find('tr').each(function () {
+                    if($(this).find("[type='checkbox']").prop("checked")==true){
+                        TrIntoEdit(this);
+                    }
+                });
+            }else {
+                $('#edit_mode_target').removeClass('btn-warning').find('span').text('Enter-Edit-Mode');
+                $('tbody').find('tr').each(function () {
+                    TrOutEdit(this);
+                });
+            }
+        }
+        function saveDatas() {
+            var olddata=$('#edit_mode_target').attr('class');
+            if(olddata.indexOf('btn-warning') != -1){
+                var postdata=[];
+                var tmp={};
+                $('tbody').find('tr[edit-enable="true"]').each(function () {
+                    tmp={'id':'','portstatus':[],'switch':[],'user':[],'purpose':[],'usecycle':[],'comments':[]};
+                    $(this).find('input,select').each(function () {
+                        var n=$(this).attr('name');
+                        if(n==undefined){n='id';}
+                        {#var v=$(this).val();#}
+                        if(n=='id'){
+                            tmp[n]=$(this).val();
+                        }else {
+                            tmp[n].push($(this).val(),$(this).attr('original'));
+                        }
+                    });
+                    postdata.push(tmp);
+                });
+                console.log(postdata);
+                postdata=JSON.stringify(postdata);
+                $.ajax({
+                    url:'/r6k/edit-ports',
+                    type:'POST',
+                    data:{'data':postdata,'csrfmiddlewaretoken':$("[name='csrfmiddlewaretoken']").val()},
+                    success:function (arg) {
+                        if(arg.status) {
+                            window.location.reload();
+                        }else {
+                            alert(arg.message);
+                        }
+                    }
+                });
+            }
+        }
+        $('input[type="checkbox"]').change(function () {
+            var tr=$(this).parent().parent();
+            var olddata=$('#edit_mode_target').attr('class');
+            if(olddata.indexOf('btn-warning') != -1 & $(this).prop("checked")==true){
+                TrIntoEdit(tr);
+            }else if(olddata.indexOf('btn-warning') != -1 & $(this).prop("checked")!=true){
+                TrOutEdit(tr);
+            }
+        });
+    {% endif %}
+    {% if request.session.user_info.superuser %}
+        function deletePort(){
+            $('#delete_port').modal('show');
+        }
+        $('#delConfirm').click(function () {
+           var postdata=[];
+           $("[type='checkbox']").each(function () {
+                if($(this).prop("checked")==true){
+                    postdata.push($(this).attr('value'));
+                }
+            });
+           {#console.log(postdata);#}
+            $.ajax({
+                url:'/r6k/del-ixia-port',
+                type:'POST',
+                traditional:true,
+                dataType:'JSON',
+                data:{'data':postdata,'csrfmiddlewaretoken':$("[name='csrfmiddlewaretoken']").val()},
+                success:function (arg) {
+                    $('#delete_port').modal('hide');
+                    if(arg.status) {
+                        window.location.reload();
+                    }else {
+                        alert(arg.message);
+                    }
+                }
+            });
+        });
+        $('td[name="ip"]').dblclick(function(){
+            $('#editChassis').modal('show');
+            var arr=new Array();
+            var ipid=$(this).attr('ipid');
+            arr=this.innerHTML.split('<br>');
+            $("input[name='ip_id']").val(ipid);
+            $("input[name='ip']").val($.trim(arr[0]));
+            $("input[name='location']").val(arr[1].split(':')[1]);
+            $("input[name='rack']").val(arr[2].split(':')[1]);
+            $("input[name='chbams']").val(arr[3].split(':')[1]);
+        });
+        $('td[name="card"]').dblclick(function(){
+            $('#editCard').modal('show');
+            var cardid=$(this).attr('cardid');
+            var ip=$(this).attr('ip');
+            var slot=this.innerHTML;
+            var stat=$(this).next().attr('status');
+            var arr=this.nextElementSibling.nextElementSibling.innerHTML.split('<br>')[0];
+            arr = arr.match(/Bams:(\d+)/);
+            $("input[name='card_id']").val(cardid);
+            $("input[name='ip']").val(ip);
+            $("input[name='slot']").val(slot);
+            if(arr==null){
+                $("input[name='cardbams']").val('');
+            }else {
+                $("input[name='cardbams']").val(arr[1]);
+            }
+            if(stat=='1'){
+                $(".selector").find("option[value='1']").attr("selected",true);
+            }else if(stat=='2'){
+                $(".selector").find("option[value='2']").attr("selected",true);
+            }else if(stat=='3'){
+                $(".selector").find("option[value='3']").attr("selected",true);
+            }
+        });
+        $('#SaveChassis').click(function () {
+            var postdata={};
+            $('#editChassis').find('input').each(function () {
+                var v=$(this).val();
+                var n=$(this).attr('name');
+                postdata[n]=v;
+            });
+            {#console.log(postdata);#}
+            $.ajax({
+                url:'/r6k/edit-chassis',
+                type:'POST',
+                data:postdata,
+                success:function (arg) {
+                    //arg字符串
+                    //JSON.parse将字符串转换成字典，相当于python中的jason.load
+                    if(arg.status){
+                        window.location.reload();
+                    }else {
+                        alert(arg.message);
+                    }
+                }
+            });
+        });
+        function deleteChassis(){
+            var postdata={};
+            $('#editChassis').find('input').each(function () {
+                var v=$(this).val();
+                var n=$(this).attr('name');
+                postdata[n]=v;
+            });
+            $.ajax({
+                url:'/r6k/dele-chassis',
+                type:'POST',
+                data:postdata,
+                success:function (arg) {
+                    if(arg.status){
+                        window.location.reload();
+                    }else {
+                        alert(arg.message);
+                    }
+                }
+            });
+        }
+        function deleteCard(){
+            var postdata={};
+            $('#editCard').find('input').each(function () {
+                var v=$(this).val();
+                var n=$(this).attr('name');
+                postdata[n]=v;
+            });
+            $.ajax({
+                url:'/r6k/dele-card',
+                type:'POST',
+                data:postdata,
+                success:function (arg) {
+                    if(arg.status){
+                        window.location.reload();
+                    }else {
+                        alert(arg.message);
+                    }
+                }
+            });
+        }
+        $('#SaveCard').click(function () {
+            var postdata={};
+            $('#editCard').find('input,select').each(function () {
+                var v=$(this).val();
+                var n=$(this).attr('name');
+                postdata[n]=v;
+            });
+            {#console.log(postdata);#}
+            $.ajax({
+                url:'/r6k/edit-card',
+                type:'POST',
+                data:postdata,
+                success:function (arg) {
+                    if(arg.status){
+                        window.location.reload();
+                    }else {
+                        alert(arg.message);
+                    }
+                }
+            });
+        });
+    {% endif %}
+    function downData(){
+        var data={};
+        data['type'] =$("#downIxia").attr("name");
+        data['_i']=$("select[name='_i']").val();
+        data['_c']=$("select[name='_c']").val();
+        data['_ct']=$("input[name='_ct']").val();
+        data['_s']=$("select[name='_s']").val();
+        data['_sw']=$("select[name='_sw']").val();
+        data['_l']=$("select[name='_l']").val();
+        data['_u']=$("input[name='_u']").val();
+        data['_p']=$("input[name='_p']").val();
+        console.log(data);
+        $.ajax({
+            type:'POST',
+            url:'/BulidData/',
+            dataType:'text',
+            data:data,
+            success:function(text){
+                var url ='/download/'+text;
+                window.location.href=url;
+            },
+            error:function(){
+                alert('Export failed');
+            }
+        });
+    }
+    </script>
+{% endblock %}

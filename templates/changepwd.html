@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+{% block title %}
+    Change Password
+{% endblock %}
+{% block content %}
+    <ol class="breadcrumb"><li></li></ol>
+    <div>
+        <div class="row col-lg-offset-1" style="position:relative;margin: 0">
+            <form class="form-horizontal col-lg-offset-1" method="POST" action="/user-info/changepwd">
+                {% csrf_token %}
+                <div class="col-xs-9 col-xs-offset-2">
+                    <div class="form-group">
+                        <label class="col-xs-3 control-label">Username</label>
+                        <div class="col-xs-8">
+                            <p class="form-control-static" style="display: inline-block;">{{ request.session.user_info.username }}
+                             <span style="color: red">{{ message }}{{ obj.errors.oldpwd.0 }}{{ obj.errors.password.0 }}{{ obj.errors.confirm_pwd.0 }}{{ obj.non_field_errors.as_text }}</span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <input style="display: none" name="nid" value="{{ request.session.user_info.nid }}">
+                        <label class="col-xs-3 control-label">Old Password</label>
+                        <div class="col-xs-4">
+                            <p></p>{{ obj.oldpwd }}{{ obj.errors.oldpwd.0 }}
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="team" class="col-xs-3 control-label">New Password</label>
+                        <div class="col-xs-4">
+                            <p></p>{{ obj.password }}
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="signature" class="col-xs-3 control-label">Confirm Password</label>
+                        <div class="col-xs-4">
+                            <p></p>{{ obj.confirm_pwd }}
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <button type="submit" class="btn btn-primary col-xs-offset-1">Save</button>
+                        <a href="/r6k" class="btn btn-default col-xs-offset-5">Cancel</a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+{% endblock %}

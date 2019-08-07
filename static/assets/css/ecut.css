@@ -1,0 +1,80 @@
+body{
+	font-family:"Lucida Sans Unicode", Verdana, Arial, Helvetica, sans-serif;
+	font-size:12px;
+	text-align: center;	
+}
+	
+#Content {
+	width:500px;
+	margin:0px auto;
+	text-align:left;
+	padding:15px;
+	border:1px dashed #333;
+	background-color:#eee;
+	}
+h1{
+	font-family: "Ericsson Capital TT";
+	color: darkblue;
+	font-size: 36px;
+	margin-bottom: 8px;
+}
+h2{
+   font-family: "Ericsson Capital TT";
+   color: darkblue;
+   font-size: 26px;
+   margin-top: 4px;
+   margin-bottom: 4px;
+}
+
+/*.collapsed { display: none; }*/
+.tablemain {border-collapse: collapse; padding: 0px; text-align: left; margin-left:auto; margin-right:auto;}
+.tablemain td {margin-left:3px;}
+#tree {}
+#tree td {font-size: 20px; padding: 0px 2px 0px 0px; /* cursor: pointer; */}
+.adeimg, .ttimage, .parimg { border: none; margin: 0px; padding: 0px; vertical-align: bottom; width: 16px; height: 25px; }
+.preimg {
+	border: none; margin: 0px; padding: 0px; vertical-align: bottom; width: 12px; height: 20px;
+}
+
+.padding-0 {
+	padding: 0px;
+}
+
+.bottom-padding-5 {
+	padding-bottom: 5px;
+}
+
+.bottom-padding-10 {
+    padding-bottom: 10px;
+}
+
+.bottom-padding-15 {
+	padding-bottom: 15px;
+}
+
+.bottom-margin-0 {
+    margin-bottom: 0px;
+}
+
+.bottom-margin-20 {
+    margin-bottom: 20px;
+}
+
+.bottom-margin-30 {
+    margin-bottom:30px;
+}
+
+.top-margin-10 {
+    margin-top:10px;
+}
+.top-margin-15 {
+    margin-top: 15px;
+}
+
+.top-margin-20 {
+    margin-top: 20px;
+}
+
+.top-margin-30 {
+    margin-top: 30px;
+}

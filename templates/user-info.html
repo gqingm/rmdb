@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+{% block title %}
+    Personal info detail
+{% endblock %}
+{% block content %}
+    <ol class="breadcrumb"><li></li></ol>
+    <div>
+        <div class="row col-lg-offset-1" style="position:relative;margin: 0">
+            <form class="form-horizontal col-lg-offset-1" method="POST" action="/user-info">
+                {% csrf_token %}
+                <div class="col-xs-9 col-xs-offset-2">
+                    <div class="form-group">
+                        <label class="col-xs-2 control-label">username</label>
+                        <div class="col-xs-5">
+                            <p class="form-control-static">{{ request.session.user_info.username }}</p>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-xs-2 control-label">Eid</label>
+                        <div class="col-xs-5">
+                            <input class="form-control" disabled='disabled' name="eid" value="{{ request.session.user_info.eid }}">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="team" class="col-xs-2 control-label">team</label>
+                        <div class="col-xs-5">
+                            <input type="text" name="team" class="form-control" id="team" value={{ request.session.user_info.team }}>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="signature" class="col-xs-2 control-label">Line</label>
+                        <div class="col-xs-5">
+                            <select class="form-control" name="line" id="line">
+                                {% for key,value in line_choices %}
+                                    {% if key == line_choice %}
+                                        <option value="{{ key }}" selected>{{ value }}</option>
+                                    {% else %}
+                                        <option value="{{ key }}">{{ value }}</option>
+                                    {% endif %}
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <button type="submit" class="btn btn-primary col-xs-offset-1">Save</button>
+                        <a href="/r6k" class="btn btn-default col-xs-offset-5">Cancel</a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+{% endblock %}

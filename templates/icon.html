@@ -1,0 +1,236 @@
+{% extends 'base.html' %}
+{% load filter_tags %}
+{% block title %}R6K devices utilization{% endblock %}
+{% block css %}
+    <script src="/static/css/bootstrap-datepicker.css"></script>
+{% endblock %}
+{% block content %}
+    <div id="re" style="width: 100%;float: left">
+        <div id="refreshArea" class="filters">
+            <ul>
+                <li>
+                    <form style="width: 60%">
+                        Start Date&nbsp;&nbsp;
+                        <input name="startdate" id="startDate" type="text" class="date start" value={{ filter_for_css.startdate|date:"Y-m-d" }}>
+                        End Date&nbsp;&nbsp;
+                        <input name="enddate" id="endDate" type="text" class="date end" value={{ filter_for_css.enddate|date:"Y-m-d" }}>
+                        {% if filter_conditon.user__line %}
+                            {% build_icon_line filter_conditon line_list %}
+                        {% else %}
+                            Line &nbsp;&nbsp;
+                            <select name="line" id="line" style="height: 26px; width: 80px;">
+                                <option value="">All</option>
+                                {% for line in line_list %}
+                                    {% lineselect line.user__line %}
+                                {% endfor %}
+                            </select>
+                        {% endif %}
+                        {% if filter_conditon.type__contains %}
+                            {% build_icon_type filter_conditon %}
+                        {% else %}
+                            Node Type &nbsp;&nbsp;
+                            <select name="duttype" id="dutType" style="height: 26px; width: 80px;">
+                                <option value="">All</option>
+                                <option value="6672">6672</option>
+                                <option value="6675">6675</option>
+                                <option value="6371">6371</option>
+                                <option value="6471/1">6471/1</option>
+                                <option value="6471/2">6471/2</option>
+                                <option value="6274">6274</option>
+                            </select>
+                        {% endif %}
+                            <button type="submit" id="refresh" style="display:inline;margin-left:40px">Refresh</button>
+                    </form>
+                    <input id="downixia" type="button" value="Export IXIA" name="icon_ixia" style="float: right;margin-top: -25px;" onclick="downixia();">
+                    <input id="downr6k" type="button" value="Export R6K" name="icon_r6k" style="float: right;margin-top: -25px;" onclick="downr6k();">
+                </li>
+            </ul>
+        </div>
+    </div>
+    <div id="container" style="height: 100%;margin-top: 55px;width: 95%"></div>
+{% endblock %}
+{% block js %}
+    <script type="text/javascript" src="/static/js/vendors/echarts/echarts.min.js"></script>
+    <script type="text/javascript" src="/static/js/vendors/echarts-gl/echarts-gl.min.js"></script>
+    <script type="text/javascript">
+        var datePickerOption = {
+            'format': 'yyyy-m-d',
+            'autoclose': true,
+            'enableOnReadonly': true,
+            'calendarWeeks': true
+        };
+        var dom = document.getElementById("container");
+        var myChart = echarts.init(dom);
+        option = null;
+        option = {
+            title: [{
+                text: 'R6K nodes utilization statistics',
+                x: '20%',
+                textAlign: 'center'
+            },{
+                text: 'R6K ixia utilization statistics',
+                x: '70%',
+                textAlign: 'center'
+            }],
+            tooltip : {
+                trigger: 'item',
+                formatter: "{a} <br/>{b} : {c} ({d}%)"
+            },
+            legend: [{
+                // orient: 'vertical',
+                // top: 'middle',
+                bottom: 10,
+                x: '10%',
+                data: ['>70%','30%-70%','15%-30%','5%-15%','<5%','Unused','Unreachable']
+            },{
+                // orient: 'vertical',
+                // top: 'middle',
+                bottom: 10,
+                x: '65%',
+                data: ['>70%','30%-70%','15%-30%','5%-15%','<5%','Unused']
+            }],
+            series : [
+                {
+                    name:'Node utilization',
+                    type: 'pie',
+                    radius : '65%',
+                    center: ['25%', '50%'],
+                    selectedMode: 'single',
+                    data:[
+                        {value:{{ HighUsage }},name: '>70%'},
+                        {value:{{ Other }}, name: '30%-70%'},
+                        {value:{{ LowUsage }}, name: '15%-30%'},
+                        {value:{{ LowerUsage }}, name: '5%-15%'},
+                        {value:{{ LowestUsage }}, name: '<5%'},
+                        {value:{{ Unused }}, name: 'Unused'},
+                        {value:{{ Unreachable }}, name: 'Unreachable'}
+                    ],
+                    itemStyle: {
+                        emphasis: {
+                            shadowBlur: 10,
+                            shadowOffsetX: 0,
+                            shadowColor: 'rgba(0, 0, 0, 0.5)'
+                        }
+                    }
+                },{
+                    name:'Ixia utilization',
+                    type: 'pie',
+                    radius : '65%',
+                    center: ['75%', '50%'],
+                    selectedMode: 'single',
+                    data:[
+                        {value:{{ HighIxia }},name: '>70%'},
+                        {value:{{ OtherIxia }}, name: '30%-70%'},
+                        {value:{{ LowIxia }}, name: '15%-30%'},
+                        {value:{{ LowerIxia }}, name: '5%-15%'},
+                        {value:{{ LowestIxia }}, name: '<5%'},
+                        {value:{{ UnusedIxia }}, name: 'Unused'}
+                    ],
+                    itemStyle: {
+                        emphasis: {
+                            shadowBlur: 10,
+                            shadowOffsetX: 0,
+                            shadowColor: 'rgba(0, 0, 0, 0.5)'
+                        }
+                    }
+                }
+            ]
+        };
+        $("#startDate").datepicker(datePickerOption);
+        $("#endDate").datepicker(datePickerOption);
+        if (option && typeof option === "object") {
+            myChart.setOption(option, false);
+        }
+        $("#container").attr('style','height: 100%; margin-top: 55px; width: 100%; -webkit-tap-highlight-color: transparent;');
+        myChart.on('click', function (params) {
+            var s=$('#startDate').val();
+            var e=$('#endDate').val();
+            var l=$('#line').val();
+            var t=$('#dutType').val();
+            var classify=null;
+            if(params.seriesName=='Node utilization'){
+                if(params.name=='>70%'){
+                    classify='high';
+                }else if(params.name=='30%-70%'){
+                    classify='middle';
+                }else if(params.name=='15%-30%'){
+                    classify='low';
+                }else if(params.name=='5%-15%'){
+                    classify='lower';
+                }else if(params.name=='<5%'){
+                    classify='lowest';
+                }else if(params.name=='Unused'){
+                    classify='unused';
+                }else if(params.name=='Unreachable'){
+                    classify='unreachable';
+                }
+                $("#container").attr('style','height: 100%; margin-top: 55px; width: 100%; -webkit-tap-highlight-color: transparent;');
+                var url='/r6k/'+classify+'?s='+s+'&e='+e+'&l='+l+'&t='+t;
+                {#console.log(params,s,e,l,t,classify);#}
+                window.open(url);
+            }else if(params.seriesName=='Ixia utilization'){
+                if(params.name=='>70%'){
+                    classify='high';
+                }else if(params.name=='30%-70%'){
+                    classify='middle';
+                }else if(params.name=='15%-30%'){
+                    classify='low';
+                }else if(params.name=='5%-15%'){
+                    classify='lower';
+                }else if(params.name=='<5%'){
+                    classify='lowest';
+                }else if(params.name=='Unused'){
+                    classify='unused';
+                }
+                $("#container").attr('style','height: 100%; margin-top: 55px; width: 100%; -webkit-tap-highlight-color: transparent;');
+                var url='/ixia/'+classify+'?s='+s+'&e='+e+'&l='+l;
+                {#console.log(params,s,e,l,classify,url);#}
+                window.open(url);
+            }
+        });
+        function downr6k(){
+            var data={};
+            data['type'] =$("#downr6k").attr("name");
+            data['sd']=$("input[name='startdate']").val();
+            data['ed']=$("input[name='enddate']").val();
+            data['l']=$("select[name='line']").val();
+            data['t']=$("select[name='duttype']").val();
+            {#console.log(data);#}
+            $.ajax({
+                type:'POST',
+                url:'/BulidData/',
+                dataType:'text',
+                data:data,
+                success:function(text){
+                    var url ='/download/'+text;
+                    window.location.href=url;
+                },
+                error:function(){
+                    alert('Export failed');
+                }
+            });
+        }
+        function downixia(){
+            var data={};
+            data['type'] =$("#downixia").attr("name");
+            data['sd']=$("input[name='startdate']").val();
+            data['ed']=$("input[name='enddate']").val();
+            data['l']=$("select[name='l']").val();
+            {#console.log(data);#}
+            $.ajax({
+                type:'POST',
+                url:'/BulidData/',
+                dataType:'text',
+                data:data,
+                success:function(text){
+                    var url ='/download/'+text;
+                    window.location.href=url;
+                },
+                error:function(){
+                    alert('Export failed');
+                }
+            });
+        }
+    </script>
+{% endblock %}
+

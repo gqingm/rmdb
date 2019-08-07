@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% block title %}Page not found{% endblock %}
+{% block css %}
+    <style>
+        .error{
+            color: red;
+            font-size: smaller;
+        }
+        body{
+            height: 80%;
+        }
+    </style>
+{% endblock %}
+{% block content %}
+    <div id="container" style="margin: 75px 41px 180px 771px">
+        <figure class="error-image">
+            <img class="error-ghost" src="/static/images/404.png"/>
+        </figure>
+        <section class="error-message">
+            <h1 class="error-code">页面未找到</h1>
+        </section>
+      </div>
+{% endblock %}
