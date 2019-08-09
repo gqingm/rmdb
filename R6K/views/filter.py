@@ -303,6 +303,16 @@ def classify(request,classify):
             if len(date_list) != len(node.useages):
                 # 补充缺少的日期和数据
                 node.useages = deal_table(date_list, node.useages)
+    else:
+        # 获取分类项
+        filter_list['topo_list'] = []
+        filter_list['line_list'] = []
+        filter_list['team_list'] = []
+        filter_list['type_list'] = []
+        filter_list['version_list'] = []
+        filter_list['location_list'] = []
+        filter_list['rack_list'] = []
+        filter_list['status_list'] = []
     return render(request,'show_filter.html',locals())
 
 def ixiaClassify(request,classify):
@@ -370,4 +380,8 @@ def ixiaClassify(request,classify):
             if len(date_list) != len(ixia.useages):
                 # 补充缺少的日期和数据
                 ixia.useages = deal_table(date_list, ixia.useages)
+    else:
+        filter_list['ip_list'] = []
+        filter_list['card_list'] = []
+        filter_list['line_list'] = []
     return render(request, 'show_ixia_filter.html', locals())

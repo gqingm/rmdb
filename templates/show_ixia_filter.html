@@ -46,35 +46,36 @@
                         {% csrf_token %}
                             <input type="text" name="s" id="startdate" style="display: none" value={{ filter_for_css.s }}>
                             <input type="text" name="e" id="enddate" style="display: none" value={{ filter_for_css.e }}>
-                            {% if ixias.count %}
-                                {% buildIxiaFilterTable filter_for_css filter_list %}
-                            {% else %}
-                                <th width="150px">
-                                    <select name="_i" id="ip" style="width: 120px">
-                                        <option></option>
-                                    </select>
-                                </th>
-                                <th width="40px">
-                                    <select name="_c" id="card" style="width: 32px;">
-                                        <option></option>
-                                    </select>
-                                </th>
-                                <th width="175px">
-                                    <input type="text" name="_ct" placeholder="search for card info" id="cardinfo" style="height: 19px;width: 117px;">
-                                </th>
-                                <th></th>
-                                <th>
-                                    <select name="_l" id="line" style="width: 47px;">
-                                        <option></option>
-                                    </select>
-                                </th>
-                                <th>
-                                    <input type="text" name="_u" id="user" placeholder="search for user" style="width: 70px;height: 19px">
-                                </th>
-                                <th>
-                                    <input type="text" name="_p" id="purpose" placeholder="search for purpose" style="width: 138px;height: 19px">
-                                </th>
-                            {% endif %}
+                            {% buildIxiaFilterTable filter_for_css filter_list %}
+{#                            {% if ixias.count %}#}
+{#                                {% buildIxiaFilterTable filter_for_css filter_list %}#}
+{#                            {% else %}#}
+{#                                <th width="150px">#}
+{#                                    <select name="_i" id="ip" style="width: 120px">#}
+{#                                        <option></option>#}
+{#                                    </select>#}
+{#                                </th>#}
+{#                                <th width="40px">#}
+{#                                    <select name="_c" id="card" style="width: 32px;">#}
+{#                                        <option></option>#}
+{#                                    </select>#}
+{#                                </th>#}
+{#                                <th width="175px">#}
+{#                                    <input type="text" name="_ct" placeholder="search for card info" id="cardinfo" style="height: 19px;width: 117px;">#}
+{#                                </th>#}
+{#                                <th></th>#}
+{#                                <th>#}
+{#                                    <select name="_l" id="line" style="width: 47px;">#}
+{#                                        <option></option>#}
+{#                                    </select>#}
+{#                                </th>#}
+{#                                <th>#}
+{#                                    <input type="text" name="_u" id="user" placeholder="search for user" style="width: 70px;height: 19px">#}
+{#                                </th>#}
+{#                                <th>#}
+{#                                    <input type="text" name="_p" id="purpose" placeholder="search for purpose" style="width: 138px;height: 19px">#}
+{#                                </th>#}
+{#                            {% endif %}#}
                             <th style="width:87px;"><input type="submit" style="height: 19px;text-align: center;font-size: smaller;vertical-align:middle" value="filter"></th>
                         </form>
                         {% if date_list.0|date:"Y-m" == date_list|last|date:"Y-m" %}

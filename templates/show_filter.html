@@ -47,53 +47,54 @@
                             <input type="text" name="s" id="startdate" style="display: none" value={{ filter_for_css.s }}>
                             <input type="text" name="e" id="enddate" style="display: none" value="{{ filter_for_css.e }}">
                             <th><input type="submit" style="height: 19px;text-align: center;font-size: smaller" value="filter"></th>
-                            {% if nodes.count %}
-                                {% build_filter_table filter_for_css filter_list %}
-                            {% else %}
-                                <th>
-                                    <select name="_tp" id="topo" style="width: 80px;vertical-align: middle">
-                                        <option></option>
-                                    </select>
-                                </th>
-                                <th>
-                                    <input type="text" name="_u" id="user" style="width: 55px;height: 19px;vertical-align: middle">
-                                </th>
-                                <th>
-                                    <select name="l" id="line" style="width: 47px;vertical-align: middle">
-                                        <option></option>
-                                    </select>
-                                </th>
-                                <th>
-                                    <select name="_t" id="team" style="width: 90px;vertical-align: middle">
-                                        <option></option>
-                                    </select>
-                                </th>
-                                <th>
-                                    <select name="t" id="type" style="width: 55px;vertical-align: middle">
-                                        <option></option>
-                                    </select>
-                                </th>
-                                <th>
-                                    <select name="_v" id="version" style="width: 66px;vertical-align: middle">
-                                        <option></option>
-                                    </select>
-                                </th>
-                                <th>
-                                    <select name="_loc" id="location" style="width: 80px;vertical-align: middle">
-                                        <option></option>
-                                    </select>
-                                </th>
-                                <th>
-                                    <select name="_r" id="rack" style="width: 65px;vertical-align: middle">
-                                        <option></option>
-                                    </select>
-                                </th>
-                                <th>
-                                    <select name="_st" id="status" style="width: 55px;vertical-align: middle">
-                                        <option></option>
-                                    </select>
-                                </th>
-                            {% endif %}
+                            {% build_filter_table filter_for_css filter_list %}
+{#                            {% if nodes.count %}#}
+{#                                {% build_filter_table filter_for_css filter_list %}#}
+{#                            {% else %}#}
+{#                                <th>#}
+{#                                    <select name="_tp" id="topo" style="width: 80px;vertical-align: middle">#}
+{#                                        <option></option>#}
+{#                                    </select>#}
+{#                                </th>#}
+{#                                <th>#}
+{#                                    <input type="text" name="_u" id="user" style="width: 55px;height: 19px;vertical-align: middle">#}
+{#                                </th>#}
+{#                                <th>#}
+{#                                    <select name="l" id="line" style="width: 47px;vertical-align: middle">#}
+{#                                        <option></option>#}
+{#                                    </select>#}
+{#                                </th>#}
+{#                                <th>#}
+{#                                    <select name="_t" id="team" style="width: 90px;vertical-align: middle">#}
+{#                                        <option></option>#}
+{#                                    </select>#}
+{#                                </th>#}
+{#                                <th>#}
+{#                                    <select name="t" id="type" style="width: 55px;vertical-align: middle">#}
+{#                                        <option></option>#}
+{#                                    </select>#}
+{#                                </th>#}
+{#                                <th>#}
+{#                                    <select name="_v" id="version" style="width: 66px;vertical-align: middle">#}
+{#                                        <option></option>#}
+{#                                    </select>#}
+{#                                </th>#}
+{#                                <th>#}
+{#                                    <select name="_loc" id="location" style="width: 80px;vertical-align: middle">#}
+{#                                        <option></option>#}
+{#                                    </select>#}
+{#                                </th>#}
+{#                                <th>#}
+{#                                    <select name="_r" id="rack" style="width: 65px;vertical-align: middle">#}
+{#                                        <option></option>#}
+{#                                    </select>#}
+{#                                </th>#}
+{#                                <th>#}
+{#                                    <select name="_st" id="status" style="width: 55px;vertical-align: middle">#}
+{#                                        <option></option>#}
+{#                                    </select>#}
+{#                                </th>#}
+{#                            {% endif %}#}
                         </form>
                         {% if date_list.0|date:"Y-m" == date_list|last|date:"Y-m" %}
                             <th style="text-align: center" class="noSort" colspan={{ month_days }} rowspan="1"
