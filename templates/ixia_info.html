@@ -206,6 +206,12 @@
                                     {% else %}
                                         <td class="nodata" style="display:table-cell; vertical-align:middle">0</td>
                                     {% endif %}
+                                {% elif useage.1 == 100 %}
+                                    {% if useage.0.weekday == 6 or useage.0.weekday == 5 %}
+                                        <td class="nodata" style="display:table-cell; vertical-align:middle;background-color: yellow">100</td>
+                                    {% else %}
+                                        <td class="nodata" style="display:table-cell; vertical-align:middle">100</td>
+                                    {% endif %}
                                 {% else %}
                                     {% if useage.0.weekday == 6 or useage.0.weekday == 5 %}
                                         <td class="nodata" style="display:table-cell; vertical-align:middle;background-color: yellow">{{ useage.1|floatformat:2 }}</td>

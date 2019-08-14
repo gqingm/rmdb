@@ -413,6 +413,12 @@ def ixia(request):
     # for u in users:
     #     print(u)
     print(filter_list)
+    #修改数据库中使用率超出100%的数据
+    useages=models.utilization.objects.all()
+    for u in useages:
+        if u.useage>100:
+            print(u.id,u.useage)
+            models.utilization.objects.filter(id=u.id).update(useage=100)
     # 遍历每个盒子信息
     for port in port_objs:
         # 获取每个盒子最近30天内的数据
