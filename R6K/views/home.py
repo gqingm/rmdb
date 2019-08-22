@@ -50,11 +50,11 @@ def get_filter_result(request,obj):
     if val:
         filter_conditions['user__line'] = val
     try:
-        val = request.GET.get('_t')
+        val = request.GET.get('_p')
     except Exception as e:
         val = ''
     if val:
-        filter_conditions['user__team'] = val
+        filter_conditions['purpose'] = val
     try:
         val = request.GET.get('_ty')
     except Exception as e:
@@ -153,7 +153,7 @@ def filter_icon(request,obj,obj1):
         val = ''
     if val:
         filter_conditions['type__contains'] = val
-    print("filter_conditions,filter_for_css:",filter_conditions,filter_for_css)
+    # print("filter_conditions,filter_for_css:",filter_conditions,filter_for_css)
     obj=obj.filter(**filter_conditions)
     return obj,obj1,filter_conditions,filter_for_css
 
@@ -232,13 +232,13 @@ def add_node(request):
 def edit_node(request):
     ret={'status':1,'message':None}
     if request.method=='POST':
-        print(request.POST)
+        # print(request.POST)
         #获取修改设计的user和node信息
         user = models.user_info.objects.filter(eid=request.POST['user'].lower()).values('nid','eid','username').first()
-        node=models.node_info.objects.filter(nid=request.POST['node_nid']).values('ip','console','username','password','location','rack','topo','bams','node2user__uid__eid','status').first()
+        node=models.node_info.objects.filter(nid=request.POST['node_nid']).values('ip','console','username','password','location','rack','topo','bams','node2user__uid__eid','status','purpose').first()
         # print(node)
         #获取post请求中携带的信息
-        nid,ip,console,username,password,location,rack,topo,bams=request.POST['node_nid'],request.POST['ip'],request.POST['console'],request.POST['username'],request.POST['password'],request.POST['location'].replace(" ", ""),request.POST['rack'].replace(" ", ""),request.POST['topo'],request.POST['bams']
+        nid,ip,console,username,password,location,rack,topo,bams,purpose=request.POST['node_nid'],request.POST['ip'],request.POST['console'],request.POST['username'],request.POST['password'],request.POST['location'].replace(" ", ""),request.POST['rack'].replace(" ", ""),request.POST['topo'],request.POST['bams'],request.POST['purpose']
         #获取status信息
         try:
             status=request.POST['status']
@@ -246,10 +246,10 @@ def edit_node(request):
             status=''
         # print(status,type(status))
         try:
-            if ip!=node['ip'] or username!=node['username'] or password!=node['password'] or location!=node['location'] or rack!=node['rack'] or topo!=node['topo'] or console!=node['console']:
+            if ip!=node['ip'] or username!=node['username'] or password!=node['password'] or location!=node['location'] or rack!=node['rack'] or topo!=node['topo'] or console!=node['console'] or purpose!=node['purpose']:
                 #有任意信息修改时，更新node相关信息
-                models.node_info.objects.filter(nid=nid).update(ip=ip,username=username,password=password,location=location.replace(" ", ""),rack=rack,topo=topo,console=console)
-                log.log('edit node info from %s to %s success by %s' % ([node['ip'],node['location'],node['rack'],node['topo']], [ip,location,rack,topo],request.session.get('user_info')['eid']), nid)
+                models.node_info.objects.filter(nid=nid).update(ip=ip,username=username,password=password,location=location.replace(" ", ""),rack=rack,topo=topo,console=console,purpose=purpose)
+                log.log('edit node info from %s to %s success by %s' % ([node['ip'],node['location'],node['rack'],node['topo'],node['purpose']], [ip,location,rack,topo,purpose],request.session.get('user_info')['eid']), nid)
             # else:
             #     models.node_info.objects.filter(nid=nid).update(deleted=False)
             # print(user_nid,nid)
@@ -463,6 +463,14 @@ def upload(request):
 
 def nodes_info(request):
     #获取session中的user信息
+    url=request.get_raw_uri()
+    import re
+    url=re.findall(r"(_s=.+)", url)
+    if not url:
+        url=''
+    else:
+        url=url[0]
+    # print(url)
     user=request.session.get('user_info')
     filter_list={}
     #定义最近30天的日期列表
@@ -474,7 +482,10 @@ def nodes_info(request):
     #如果用户已登录
     if user:
         #将属于当前用户的node放到最前面展示
-        nodes=list(nodes.filter(user__nid=request.session.get('user_info')['nid']).all().order_by('nid')) + list(nodes.exclude(user__nid=request.session.get('user_info')['nid']).all().order_by('nid'))
+        try:
+            nodes=list(nodes.filter(user__nid=request.session.get('user_info')['nid']).all().order_by('nid')) + list(nodes.exclude(user__nid=request.session.get('user_info')['nid']).all().order_by('nid'))
+        except Exception as e:
+            nodes=[]
     #获取数据库中存储的node关联的所有topo信息并排序
     filter_list['topo_list'] = models.node_info.objects.values('topo').distinct().order_by('topo')
     #获取数据库中存储的node关联的所有line信息并排序
@@ -502,6 +513,8 @@ def nodes_info(request):
     filter_list['rack_list']=models.node_info.objects.values('rack').distinct().order_by('rack')
     # 获取数据库中存储的node状态信息并排序
     filter_list['status_list']=models.node_info.objects.values('status').distinct().order_by('status')
+    # 获取数据库中存储的node用途信息并排序
+    filter_list['purpose_list'] = models.node_info.objects.values('purpose').distinct().order_by('purpose')
     # print(filter_list)
     #遍历每个盒子信息
     for node in nodes:
@@ -570,7 +583,6 @@ def index(request,*args,**kwargs):
         date_list=[filter_for_css['enddate']]
     else:
         date_list = [filter_for_css['startdate'],filter_for_css['enddate']]
-    print(date_list)
     if len(date_list)==1:
         #时间只选择了一天
         nodes = nodes.filter(utilization__day=date_list[0])

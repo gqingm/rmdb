@@ -86,6 +86,14 @@ class RegisterForm(forms.Form):
         if p1 != p2:
             raise ValidationError('* Entered passwords differ')
 
+    def clean_eid(self):
+        #对于username扩展验证,查看是否存在
+        eid = self.cleaned_data['eid'].lower()
+        users = models.user_info.objects.filter(eid=eid).count()
+        if users:#如果用户名已存在
+            raise ValidationError('* The eid was existed')
+        return eid
+
 class LoginForm(forms.Form):
     username = fields.CharField(widget=widgets.TextInput(attrs={'class': 'form-control', 'placeholder': 'Please input username'}))
     password = fields.CharField(widget=widgets.PasswordInput(attrs={'class': 'form-control', 'placeholder': 'Please input password'}))

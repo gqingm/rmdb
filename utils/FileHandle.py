@@ -6,13 +6,13 @@ from django.db.models import Q
 
 def BulidR6KExcel(download_url,obj):
     #定义字段名(列表)
-    field_name_list = ['ip','topo','user','line','team','type','version','location','rack','bams id','sn','status','mode','haradware info']
+    field_name_list = ['ip','topo','user','line','purpose','team','type','version','location','rack','bams id','sn','status','mode','haradware info']
     #定义格式
     style0 = xlwt.easyxf('font: name Times New Roman, color-index red, bold on')
     #获取每个设备的信息
     mylist=[]
     for i in obj:
-        mylist.append([i.ip,i.topo,i.node2user_set.first().uid.eid,i.node2user_set.first().uid.get_line_display(),i.node2user_set.first().uid.team,i.type,i.backplane,i.location,i.rack,i.bams,i.sn,i.get_status_display(),i.get_mode_display(),i.hardware_info])
+        mylist.append([i.ip,i.topo,i.node2user_set.first().uid.eid,i.node2user_set.first().uid.get_line_display(),i.get_purpose_display(),i.node2user_set.first().uid.team,i.type,i.backplane,i.location,i.rack,i.bams,i.sn,i.get_status_display(),i.get_mode_display(),i.hardware_info])
     #创建excel表格和sheet页
     wb = xlwt.Workbook()
     ws = wb.add_sheet('Sheet')
@@ -134,12 +134,12 @@ def deal_table(date_list,useages):
     return new_list
 
 def WriteSheet(obj,sheet,datelist):
-    field_name_list = ['ip','topo','user','line','team','type','version','location','rack','status']
+    field_name_list = ['ip','topo','user','line','purpose','team','type','version','location','rack','status']
     mylist = []
     #定义格式
     style0 = xlwt.easyxf('font: name Times New Roman, color-index red, bold on')
     for i in obj:
-        mylist.append([i.ip, i.topo, i.node2user_set.first().uid.eid, i.node2user_set.first().uid.get_line_display(),i.node2user_set.first().uid.team, i.type, i.backplane, i.location, i.rack,i.get_status_display()])
+        mylist.append([i.ip, i.topo, i.node2user_set.first().uid.eid, i.node2user_set.first().uid.get_line_display(),i.get_purpose_display(),i.node2user_set.first().uid.team, i.type, i.backplane, i.location, i.rack,i.get_status_display()])
     for d in datelist:
         field_name_list.append(d.strftime("%Y-%m-%d"))
     field_name_list.append('Avg')

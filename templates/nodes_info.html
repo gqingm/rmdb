@@ -80,10 +80,10 @@
                                 </select>
                             </th>
                             <th width="102px">
-                                <select name="_t" id="team" style="width: 90px;">
+                                <select name="_p" id="purpose" style="width: 90px;">
                                     <option></option>
-                                    {% for team in filter_list.team_list %}
-                                        <option value="{{ team.user__team }}">{{ team.user__team }}</option>
+                                    {% for purpose in filter_list.purpose_list %}
+                                        {% purposeselect purpose.purpose %}
                                     {% endfor %}
                                 </select>
                             </th>
@@ -136,7 +136,7 @@
                                 </select>
                             </th>
                             <th width="52px">
-                                <select name="_m" id="status" style="width:40px;">
+                                <select name="_m" id="mode" style="width:40px;">
                                     <option></option>
                                     <option value="0">D</option>
                                     <option value="1">C</option>
@@ -167,7 +167,7 @@
                         <th rowspan="1" class="sorting" colspan="1" style="width: 80px">Topo</th>
                         <th rowspan="1" class="sorting" colspan="1" style="width: 55px">User</th>
                         <th rowspan="1" class="sorting" colspan="1" style="width: 41px">Line</th>
-                        <th rowspan="1" class="sorting" colspan="1" style="width: 90px">Team</th>
+                        <th rowspan="1" class="sorting" colspan="1" style="width: 90px">Purpose</th>
                         <th rowspan="1" class="sorting" colspan="1" style="width: 55px">Type</th>
                         <th rowspan="1" class="sorting" colspan="1" style="width: 66px">Version</th>
                         <th rowspan="1" class="sorting" colspan="1" style="width: 80px">Location</th>
@@ -201,12 +201,12 @@
                                 <td style="display:table-cell; vertical-align:middle">{{ row.ip }}</td>
                             {% endif %}
                             <td style="display: none" console="{{ row.console }}"></td>
-                            <td style="display:table-cell; vertical-align:middle">{{ row.topo }}</td>
+                            <td style="display:table-cell; vertical-align:middle;word-break: break-word">{{ row.topo }}</td>
                             <td style="display:table-cell; vertical-align:middle">{{ row.node2user_set.first.uid.eid }}</td>
                             <td style="display: none">{{ row.username }}</td>
                             <td style="display: none">{{ row.password }}</td>
                             <td style="display:table-cell; vertical-align:middle">{{ row.node2user_set.first.uid.get_line_display }}</td>
-                            <td style="display:table-cell; vertical-align:middle">{{ row.node2user_set.first.uid.team }}</td>
+                            <td style="display:table-cell; vertical-align:middle;word-break: break-word">{{ row.get_purpose_display }}</td>
                             <td style="display:table-cell; vertical-align:middle">{{ row.type }}</td>
                             <td style="display:table-cell; vertical-align:middle">{{ row.backplane }}</td>
                             <td style="display:table-cell; vertical-align:middle">{{ row.location }}</td>
@@ -243,7 +243,7 @@
             {% if filter_for_css %}
                 <nav aria-label="Page navigation" class="navbar-left">
                     <ul class="pagination">
-                        {% render_paginator filter_for_css nodes paginator pageRange current_num %}
+                        {% render_paginator url nodes paginator pageRange current_num %}
                     </ul>
                 </nav>
             {% else %}
@@ -330,12 +330,24 @@
                             <div class="col-sm-9">
                                 <input type="text" class="form-control test2" name="topo" value="">
                             </div>
+                            <label for="purpose" class="col-sm-2 control-label">Purpose</label>
+                            <div class="col-sm-9">
+                                <select name="purpose" id="purpose" class="form-control test2">
+                                    <option value="0">None</option>
+                                    <option value="1">Centralized regression-FT</option>
+                                    <option value="2">Centralized regression-ST</option>
+                                    <option value="3">Centralized regression-1D-KPI</option>
+                                    <option value="4">Centralized regression-IoT</option>
+                                    <option value="5">Maintain</option>
+                                    <option value="6">E2E</option>
+                                    <option value="7">Manual Test</option>
+                                </select>
+                            </div>
                             {% if request.session.user_info.superuser %}
                                 <label for="status" class="col-sm-2 control-label">Status</label>
                                 <div class="col-sm-9">
                                     <select name="status" id="status" class="form-control test2">
-                                        <option value=""></option>
-                                        <option value="0" selected>on line</option>
+                                        <option value="0">on line</option>
                                         <option value="3">release</option>
                                         <option value="4">unavailable</option>
                                         <option value="5">return to factory</option>
@@ -424,7 +436,7 @@
     }
     function editNode(ths){
         $('#editNode').modal('show');
-        var data={'nid':'','ip':'','console':'','user':'','username':'','password':'','location':'','rack':'','topo':''};
+        var data={'nid':'','ip':'','console':'','user':'','username':'','password':'','location':'','rack':'','topo':'','purpose':''};
         data.nid=ths.parentElement.previousElementSibling.getAttribute('nid');
         data.ip=ths.innerHTML;
         data.console=ths.parentElement.nextElementSibling.getAttribute('console');
@@ -432,10 +444,10 @@
         data.user=ths.parentElement.nextElementSibling.nextElementSibling.nextElementSibling.innerHTML;
         data.username=ths.parentElement.nextElementSibling.nextElementSibling.nextElementSibling.nextElementSibling.innerHTML;
         data.password=ths.parentElement.nextElementSibling.nextElementSibling.nextElementSibling.nextElementSibling.nextElementSibling.innerHTML;
+        data.purpose=ths.parentElement.nextElementSibling.nextElementSibling.nextElementSibling.nextElementSibling.nextElementSibling.nextElementSibling.nextElementSibling.innerHTML;
         data.location=ths.parentElement.nextElementSibling.nextElementSibling.nextElementSibling.nextElementSibling.nextElementSibling.nextElementSibling.nextElementSibling.nextElementSibling.nextElementSibling.nextElementSibling.innerHTML;
         data.rack=ths.parentElement.nextElementSibling.nextElementSibling.nextElementSibling.nextElementSibling.nextElementSibling.nextElementSibling.nextElementSibling.nextElementSibling.nextElementSibling.nextElementSibling.nextElementSibling.innerHTML;
         data.bams=ths.parentElement.nextElementSibling.nextElementSibling.nextElementSibling.nextElementSibling.nextElementSibling.nextElementSibling.nextElementSibling.nextElementSibling.nextElementSibling.nextElementSibling.nextElementSibling.nextElementSibling.innerHTML;
-        {#console.log(data);#}
         $("input[name='node_nid']").val(data.nid);
         $("input[name='ip']").val(data.ip);
         $("input[name='console']").val(data.console);
@@ -446,9 +458,20 @@
         $("input[name='rack']").val(data.rack);
         $("input[name='topo']").val(data.topo);
         $("input[name='bams']").val(data.bams);
+        $('#editNode').find('option').each(function () {
+            if($(this).text()==data.purpose){
+                this.selected=true;
+            }else {
+                this.selected=false;
+            }
+        });
         if(data.bams.length<10){
             {#console.log(data.bams.length);#}
             $("input[name='bams']").removeAttr("readonly");
+        }else {
+            {% if request.session.user_info.superuser %}
+                $("input[name='bams']").removeAttr("readonly");
+            {% endif %}
         }
     }
     $('#SaveChange').click(function () {

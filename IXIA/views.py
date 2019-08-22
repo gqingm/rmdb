@@ -257,8 +257,8 @@ def edit_ports(request):
         for data in datas:
             temp={'subject':'','to':'','content':'','cc':''}
             port=models.port.objects.filter(id=int(data['id'])).values('card__ip__ip','card__slot','user__eid','port_num','status','purpose','switch','usecycle','comments').first()
-            print(port['purpose'],data['purpose'][1],port['user__eid'],data['user'][1],port['switch'],data['switch'][1],port['usecycle'],data['usecycle'][1],port['comments'],data['comments'][1],port['status'],statusmap[data['portstatus'][1]])
-            if port['purpose']!=data['purpose'][1] or (port['user__eid'] and port['user__eid']!=data['user'][1]) or (port['switch']!=data['switch'][1] and port['switch']) or port['usecycle']!=data['usecycle'][1] or (port['comments']!=data['comments'][1] and port['comments']) or port['status']!=statusmap[data['portstatus'][1]]:
+            # print(port['purpose'],data['purpose'][1],port['user__eid'],data['user'][1],port['switch'],data['switch'][1],port['usecycle'],data['usecycle'][1],port['comments'],data['comments'][1],port['status'],statusmap[data['portstatus'][1]],type(port['status']),type(statusmap[data['portstatus'][1]]))
+            if (port['purpose'] and port['purpose']!=data['purpose'][1]) or (port['user__eid'] and port['user__eid']!=data['user'][1]) or (port['switch']!=data['switch'][1] and port['switch']) or (port['usecycle']!=data['usecycle'][1] and port['usecycle']) or (port['comments']!=data['comments'][1] and port['comments']) or port['status']!=statusmap[data['portstatus'][1]]:
                 ret['status'] = False
                 ret['message'] += 'For port %s-%s-%s, the original data was not latest, please refresh and try to modify again.' % (port['card__ip__ip'],port['card__slot'],port['port_num'])
             else:

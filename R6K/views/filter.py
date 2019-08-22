@@ -73,11 +73,11 @@ def second_filter(request,obj):
         filter_conditions['user__eid__iexact'] = val
     # 获取要过滤的team信息
     try:
-        val = request.GET.get('_t')
+        val = request.GET.get('_p')
     except Exception as e:
         val = ''
     if val:
-        filter_conditions['user__team'] = val
+        filter_conditions['purpose'] = val
     # 获取要过滤的node版本信息
     try:
         val = request.GET.get('_v')
@@ -293,6 +293,7 @@ def classify(request,classify):
         filter_list['location_list'] = nodes.values('location').distinct().order_by('location')
         filter_list['rack_list'] = nodes.values('rack').distinct().order_by('rack')
         filter_list['status_list'] = nodes.values('status').distinct().order_by('status')
+        filter_list['purpose_list'] = nodes.values('purpose').distinct().order_by('purpose')
         nodes=second_filter(request, nodes)
         total = nodes.count()
         # 遍历每个盒子信息
@@ -313,6 +314,7 @@ def classify(request,classify):
         filter_list['location_list'] = []
         filter_list['rack_list'] = []
         filter_list['status_list'] = []
+        filter_list['purpose_list'] = []
     return render(request,'show_filter.html',locals())
 
 def ixiaClassify(request,classify):

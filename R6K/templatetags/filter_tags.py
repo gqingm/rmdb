@@ -18,6 +18,11 @@ def statusselect(status):
     return mark_safe(ele)
 
 @register.simple_tag
+def purposeselect(purpose):
+    ele='<option value="%s">%s</option>' %(purpose,dict(node_info.purpose_choice)[purpose])
+    return mark_safe(ele)
+
+@register.simple_tag
 def build_table_row(filter_column,filter_list):
     filter_ele = '<th width="115px">Show<select name="_s" id="show">'
     if filter_column['_s'] == '10':
@@ -49,15 +54,15 @@ def build_table_row(filter_column,filter_list):
             filter_ele += '<option value="%s" selected>%s</option>' %(f['user__line'],dict(user_info.line_choice)[f['user__line']])
         else:
             filter_ele += '<option value="%s">%s</option>' %(f['user__line'],dict(user_info.line_choice)[f['user__line']])
-    filter_ele += '</select></th><th width="102px"><select name="_t" id="team" style="width: 90px;"><option></option>'
-    #team
-    for f in filter_list['team_list']:
-        if f['user__team'] == None:
+    filter_ele += '</select></th><th width="102px"><select name="_p" id="purpose" style="width: 90px;"><option></option>'
+    #purpose
+    for f in filter_list['purpose_list']:
+        if f['purpose'] == None:
             continue
-        elif f['user__team']==filter_column['_t']:
-            filter_ele += '<option value="%s" selected>%s</option>' % (f['user__team'], f['user__team'])
+        elif str(f['purpose'])==filter_column['_p']:
+            filter_ele += '<option value="%s" selected>%s</option>' % (f['purpose'], dict(node_info.purpose_choice)[f['purpose']])
         else:
-            filter_ele +='<option value="%s">%s</option>' %(f['user__team'],f['user__team'])
+            filter_ele +='<option value="%s">%s</option>' %(f['purpose'],dict(node_info.purpose_choice)[f['purpose']])
     filter_ele += '</select></th><th width="67px"><select name="_ty" id="type" style="width: 55px;"><option></option>'
     #type
     for f in filter_list['type_list']:
@@ -97,7 +102,7 @@ def build_table_row(filter_column,filter_list):
         else:
             filter_ele += '<option value="%s">%s</option>' %(f['status'],dict(node_info.status_choice)[f['status']])
     #mode
-    filter_ele += '</select></th><th width="52px"><select name="_m" id="status" style="width:40px;"><option></option>'
+    filter_ele += '</select></th><th width="52px"><select name="_m" id="mode" style="width:40px;"><option></option>'
     if filter_column['_m'] == '0':
         filter_ele+='<option value="0" selected>D</option><option value="1">C</option>'
     elif filter_column['_m'] == '1':
@@ -110,12 +115,9 @@ def build_table_row(filter_column,filter_list):
     return mark_safe(filter_ele)
 
 @register.simple_tag
-def render_paginator(filter_column,nodes,paginator,range,cur_num):
+def render_paginator(url,nodes,paginator,range,cur_num):
     if cur_num:
-        strf=''
-        for k,v in filter_column.items():
-            if k=='page':continue
-            strf+='&'+k+'='+v
+        strf='&'+url
         ele='<li><a href="?page=1%s" class="active"><span aria-hidden="true">First</span></a></li>' %strf
         if nodes.has_previous():
             ele+='<li><a href="?page=%s%s" aria-label="Previous"><span aria-hidden="true">&laquo;</span></a></li>' %(nodes.previous_page_number(),strf)
@@ -187,13 +189,13 @@ def build_filter_table(filter_for_css,filter_list):
             filter_ele += '<option value="%s" selected>%s</option>' %(f['user__line'], dict(user_info.line_choice)[f['user__line']])
         else:
             filter_ele += '<option value="%s">%s</option>' % (f['user__line'], dict(user_info.line_choice)[f['user__line']])
-    filter_ele += '</select></th><th><select name="_t" id="team" style="width: 90px;vertical-align: middle"><option></option>'
-    # team
-    for f in filter_list['team_list']:
-        if '_t' in filter_for_css and f['user__team'] == filter_for_css['_t']:
-            filter_ele += '<option value="%s" selected>%s</option>' % (f['user__team'], f['user__team'])
+    filter_ele += '</select></th><th><select name="_p" id="purpose" style="width:208px;vertical-align: middle"><option></option>'
+    # purpose
+    for f in filter_list['purpose_list']:
+        if '_p' in filter_for_css and str(f['purpose']) == filter_for_css['_p']:
+            filter_ele += '<option value="%s" selected>%s</option>' % (f['purpose'], dict(node_info.purpose_choice)[f['purpose']])
         else:
-            filter_ele += '<option value="%s">%s</option>' % (f['user__team'], f['user__team'])
+            filter_ele += '<option value="%s">%s</option>' % (f['purpose'], dict(node_info.purpose_choice)[f['purpose']])
     filter_ele += '</select></th><th><select name="t" id="type" style="width: 55px;vertical-align: middle"><option></option>'
     # type
     if filter_for_css['t']=='6672':
@@ -231,7 +233,7 @@ def build_filter_table(filter_for_css,filter_list):
             filter_ele += '<option value="%s" selected>%s</option>' % (f['rack'], f['rack'])
         else:
             filter_ele += '<option value="%s">%s</option>' % (f['rack'], f['rack'])
-    filter_ele += '</select></th><th><select name="_st" id="status" style="width: 55px;vertical-align: middle"><option></option>'
+    filter_ele += '</select></th><th><select name="_st" id="status" style="width: 64px;vertical-align: middle"><option></option>'
     #status
     for f in filter_list['status_list']:
         if '_st' in filter_for_css and str(f['status']) == filter_for_css['_st']:

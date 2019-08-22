@@ -233,6 +233,19 @@
                             <div class="col-sm-9">
                                 <input type="text" class="form-control test2" name="topo" value="">
                             </div>
+                            <label for="purpose" class="col-sm-2 control-label">Purpose</label>
+                            <div class="col-sm-9">
+                                <select name="purpose" id="purpose" class="form-control test2">
+                                    <option value="0">None</option>
+                                    <option value="1">Centralized regression-FT</option>
+                                    <option value="2">Centralized regression-ST</option>
+                                    <option value="3">Centralized regression-1D-KPI</option>
+                                    <option value="4">Centralized regression-IoT</option>
+                                    <option value="5">Maintain</option>
+                                    <option value="6">E2E</option>
+                                    <option value="7">Manual Test</option>
+                                </select>
+                            </div>
                         </div>
                     </form>
                 </div>
@@ -289,7 +302,7 @@
     }
     function editNode(ths){
         $('#editNode').modal('show');
-        var data={'nid':'','ip':'','console':'','user':'','username':'','password':'','location':'','rack':'','topo':''};
+        var data={'nid':'','ip':'','console':'','user':'','username':'','password':'','location':'','rack':'','topo':'','purpose':''};
         data.nid=ths.parentElement.previousElementSibling.getAttribute('nid');
         data.ip=ths.innerHTML;
         data.console=ths.parentElement.nextElementSibling.getAttribute('console');
@@ -297,6 +310,7 @@
         data.eid=ths.parentElement.nextElementSibling.nextElementSibling.nextElementSibling.innerHTML;
         data.username=ths.parentElement.nextElementSibling.nextElementSibling.nextElementSibling.nextElementSibling.innerHTML;
         data.password=ths.parentElement.nextElementSibling.nextElementSibling.nextElementSibling.nextElementSibling.nextElementSibling.innerHTML;
+        data.purpose=ths.parentElement.nextElementSibling.nextElementSibling.nextElementSibling.nextElementSibling.nextElementSibling.nextElementSibling.nextElementSibling.innerHTML;
         data.location=ths.parentElement.nextElementSibling.nextElementSibling.nextElementSibling.nextElementSibling.nextElementSibling.nextElementSibling.nextElementSibling.nextElementSibling.nextElementSibling.nextElementSibling.innerHTML;
         data.rack=ths.parentElement.nextElementSibling.nextElementSibling.nextElementSibling.nextElementSibling.nextElementSibling.nextElementSibling.nextElementSibling.nextElementSibling.nextElementSibling.nextElementSibling.nextElementSibling.innerHTML;
         data.bams=ths.parentElement.nextElementSibling.nextElementSibling.nextElementSibling.nextElementSibling.nextElementSibling.nextElementSibling.nextElementSibling.nextElementSibling.nextElementSibling.nextElementSibling.nextElementSibling.nextElementSibling.innerHTML;
@@ -311,6 +325,13 @@
         $("input[name='rack']").val(data.rack);
         $("input[name='topo']").val(data.topo);
         $("input[name='bams']").val(data.bams);
+        $('#editNode').find('option').each(function () {
+            if($(this).text()==data.purpose){
+                this.selected=true;
+            }else {
+                this.selected=false;
+            }
+        });
         if(data.bams.length<10){
             $("input[name='bams']").removeAttr("disabled");
         }

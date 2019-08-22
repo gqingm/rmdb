@@ -58,6 +58,16 @@ class node_info(models.Model):
     mode=models.SmallIntegerField(choices=mode_choice,default=0)
     share=models.BooleanField(default=False)
     comments=models.CharField(null=True,blank=True,max_length=255)
+    purpose_choice = ((0, 'None'),
+                      (1, 'Centralized regression-FT'),
+                      (2, 'Centralized regression-ST'),
+                      (3, 'Centralized regression-1D-KPI'),
+                      (4, 'Centralized regression-IoT'),
+                      (5, 'Maintain'),
+                      (6, 'E2E'),
+                      (7, 'Manual Test'),
+                      )
+    purpose = models.SmallIntegerField(choices=purpose_choice,default=0)
     def __str__(self):
         return self.ip
 

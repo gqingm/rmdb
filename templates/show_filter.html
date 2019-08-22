@@ -114,7 +114,7 @@
                         <th rowspan="1" class="sorting" colspan="1" style="width: 80px">Topo</th>
                         <th rowspan="1" class="sorting" colspan="1" style="width: 55px">User</th>
                         <th rowspan="1" class="sorting" colspan="1" style="width: 41px">Line</th>
-                        <th rowspan="1" class="sorting" colspan="1" style="width: 90px">Team</th>
+                        <th rowspan="1" class="sorting" colspan="1" style="width: 90px">Purpose</th>
                         <th rowspan="1" class="sorting" colspan="1" style="width: 55px">Type</th>
                         <th rowspan="1" class="sorting" colspan="1" style="width: 66px">Version</th>
                         <th rowspan="1" class="sorting" colspan="1" style="width: 80px">Location</th>
@@ -141,7 +141,7 @@
                             <td style="display: none">{{ row.username }}</td>
                             <td style="display: none">{{ row.password }}</td>
                             <td style="display:table-cell; vertical-align:middle">{{ row.node2user_set.first.uid.get_line_display }}</td>
-                            <td style="display:table-cell; vertical-align:middle">{{ row.node2user_set.first.uid.team }}</td>
+                            <td style="display:table-cell; vertical-align:middle">{{ row.get_purpose_display }}</td>
                             <td style="display:table-cell; vertical-align:middle">{{ row.type }}</td>
                             <td style="display:table-cell; vertical-align:middle">{{ row.backplane }}</td>
                             <td style="display:table-cell; vertical-align:middle">{{ row.location }}</td>
